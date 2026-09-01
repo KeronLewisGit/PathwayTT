@@ -17,6 +17,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Scheduler-driven queue draining (shared hosting)
+    |--------------------------------------------------------------------------
+    |
+    | When true, schedule:run drains the queue every minute — the only way to
+    | process jobs on shared hosts (Hostinger/cPanel) with no daemon worker.
+    | Set false on a VPS running a supervisor-managed queue:work process.
+    |
+    */
+
+    'via_scheduler' => env('QUEUE_VIA_SCHEDULER', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Queue Connections
     |--------------------------------------------------------------------------
     |

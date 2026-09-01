@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+use App\Services\Resume\ResumeStructurerInterface;
+use App\Services\Resume\RuleBasedStructurer;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +14,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(ResumeStructurerInterface::class, function () {
+            $driver = config('resume.driver', 'rule');
+
+            if ($driver === 'llm') {
+                // LlmStructurer ships in Phase 7. Until then fall back to the
+                // rule-based driver rather than failing parses.
+                Log::warning('RESUME_PARSER_DRIVER=llm requested but LlmStructurer is not yet available; using rule-based structurer.');
+            }
+
+            return $this->app->make(RuleBasedStructurer::class);
+        });
     }
 
     /**

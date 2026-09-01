@@ -50,6 +50,10 @@ class ProfileController extends Controller
 
         Auth::logout();
 
+        // Hard-delete resume FILES first: the DB cascade that removes the
+        // rows bypasses model events, so files must be purged explicitly.
+        $user->resumes->each->delete();
+
         $user->delete();
 
         $request->session()->invalidate();
