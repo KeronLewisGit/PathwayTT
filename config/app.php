@@ -69,6 +69,27 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Display Timezone (Trinidad & Tobago)
+    |--------------------------------------------------------------------------
+    |
+    | Storage stays UTC; user-facing dates render in AST (UTC-4, no DST).
+    | AST aligns with US Eastern during EDT — a selling point for remote
+    | work that the UI surfaces on remote-international listings.
+    |
+    */
+
+    'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'America/Port_of_Spain'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Application Version
+    |--------------------------------------------------------------------------
+    */
+
+    'version' => '0.1.0',
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------
     |
