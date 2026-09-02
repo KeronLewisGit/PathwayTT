@@ -5,9 +5,10 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResumeDownloadController;
 use Illuminate\Support\Facades\Route;
 
+// No public landing page yet (Phase 7): guests go to login, users to their dashboard.
 Route::get('/', function () {
-    return view('welcome');
-});
+    return redirect()->route(auth()->check() ? 'dashboard' : 'login');
+})->name('home');
 
 Route::get('/dashboard', function () {
     return view('dashboard');
