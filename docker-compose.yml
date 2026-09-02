@@ -1,0 +1,128 @@
+# PathwayTT — local preview stack. See docs/DOCKER.md.
+#
+#   docker compose up --build        # first time / after code changes
+#   docker compose up -d             # later
+#   docker compose down              # stop (keeps data)
+#   docker compose down -v           # stop AND wipe database + uploads
+#
+# App:      http://localhost:8088      (admin panel at /admin; change with APP_PORT=…)
+# Mailpit:  http://localhost:8025      (catches verification emails)
+#
+# APP_KEY is read from the Laravel .env next to this file if present; if
+# not, the web container generates one and persists it in the storage volume.
+
+x-app-env: &app-env
+  APP_NAME: PathwayTT
+  APP_ENV: local            # "local" also enables the demo user + demo jobs seeders
+  APP_DEBUG: "true"
+  APP_URL: http://localhost:${APP_PORT:-8088}
+  APP_KEY: ${APP_KEY:-}
+  APP_DISPLAY_TIMEZONE: America/Port_of_Spain
+  LOG_CHANNEL: stderr
+  LOG_LEVEL: debug
+  DB_CONNECTION: mysql
+  DB_HOST: db
+  DB_PORT: "3306"
+  DB_DATABASE: pathwaytt
+  DB_USERNAME: pathwaytt
+  DB_PASSWORD: pathwaytt
+  CACHE_STORE: database
+  SESSION_DRIVER: database
+  QUEUE_CONNECTION: database
+  # A dedicated queue container runs here; the schedule:run fallback is for shared hosts.
+  QUEUE_VIA_SCHEDULER: "false"
+  FILESYSTEM_DISK: local
+  MAIL_MAILER: smtp
+  MAIL_HOST: mailpit
+  MAIL_PORT: "1025"
+  MAIL_FROM_ADDRESS: hello@pathwaytt.test
+  MAIL_FROM_NAME: PathwayTT
+  RESUME_PARSER_DRIVER: ${RESUME_PARSER_DRIVER:-rule}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+
+# Only `app` builds the image; queue and scheduler reuse it by tag.
+x-app-image: &app-image
+  image: pathwaytt/app:local
+
+services:
+  db:
+    image: mysql:8.4
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: pathwaytt
+      MYSQL_USER: pathwaytt
+      MYSQL_PASSWORD: pathwaytt
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-proot"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    # Uncomment to reach the container DB from a desktop client (3307 avoids
+    # clashing with the Laragon MySQL on 3306).
+    # ports:
+    #   - "3307:3306"
+
+  app:
+    <<: *app-image
+    build:
+      context: .
+      args:
+        INSTALL_DEV: "true"
+    environment: *app-env
+    ports:
+      # Host port is APP_PORT (default 8088; 8080 is often taken by WSL relay).
+      - "${APP_PORT:-8088}:80"
+    volumes:
+      - app_storage:/var/www/html/storage/app
+    depends_on:
+      db:
+        condition: service_healthy
+      mailpit:
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1/up"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+  # Resume parsing, match recomputation and gap-plan generation run here.
+  queue:
+    <<: *app-image
+    environment: *app-env
+    command: ["php", "artisan", "queue:work", "--tries=3", "--sleep=2", "--max-time=3600"]
+    user: www-data
+    volumes:
+      - app_storage:/var/www/html/storage/app
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Cron stand-in: nightly job:sync and anything else on the schedule.
+  scheduler:
+    <<: *app-image
+    environment: *app-env
+    command: ["sh", "-c", "while true; do php artisan schedule:run --no-interaction; sleep 60; done"]
+    user: www-data
+    volumes:
+      - app_storage:/var/www/html/storage/app
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Catches every email the app sends (registration verification, resets).
+  mailpit:
+    image: axllent/mailpit:latest
+    ports:
+      - "8025:8025"
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: 1
+      MP_SMTP_AUTH_ALLOW_INSECURE: 1
+
+volumes:
+  db_data:
+  app_storage:
