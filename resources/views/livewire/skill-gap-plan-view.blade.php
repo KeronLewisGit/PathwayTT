@@ -28,6 +28,7 @@
 
         <div class="flex items-center gap-4">
             <button type="button" wire:click="generate" @if ($generating) disabled @endif class="text-gray-600 hover:text-gray-900 disabled:opacity-50">Regenerate</button>
+            <a href="{{ route('plan.pdf') }}" class="link">Download PDF</a>
             <a href="{{ route('matches.index') }}" class="link">Back to matches</a>
         </div>
     </div>

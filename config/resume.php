@@ -8,11 +8,22 @@ return [
     |--------------------------------------------------------------------------
     | "rule" — RuleBasedStructurer, no API key required (default).
     | "llm"  — LlmStructurer via the Anthropic API; requires ANTHROPIC_API_KEY.
-    |          (Implementation lands in Phase 7; the binding falls back to
-    |          "rule" until then.)
+    |          Falls back to the rule-based parser on any API error, refusal
+    |          or invalid response, so parsing never fails because of the LLM.
     */
 
     'driver' => env('RESUME_PARSER_DRIVER', 'rule'),
+
+    'anthropic' => [
+        'api_key' => env('ANTHROPIC_API_KEY'),
+        'model' => env('ANTHROPIC_MODEL', 'claude-opus-5'),
+        // Structured JSON for a resume is a few thousand tokens; this is headroom, not a target.
+        'max_tokens' => 8000,
+        'timeout' => 120,
+        // Resumes above this are sent as-is only up to the cap and the tail is
+        // logged as dropped — never silently. 60k chars ≈ 20 dense pages.
+        'max_chars' => 60000,
+    ],
 
     // Upload constraints — validated by BOTH extension and MIME type.
     'max_size_kb' => 5120, // 5 MB

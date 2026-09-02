@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResumeDownloadController;
+use App\Http\Controllers\SkillGapPlanPdfController;
 use Illuminate\Support\Facades\Route;
 
 // No public landing page yet (Phase 7): guests go to login, users to their dashboard.
@@ -10,9 +12,9 @@ Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 })->name('home');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', DashboardController::class)
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     // Resume upload + parse status
@@ -39,8 +41,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Saved / applied jobs tracker
     Route::view('/applications', 'applications.index')->name('applications.index');
 
-    // Advisory mode: persisted Skills Gap Plan
+    // Advisory mode: persisted Skills Gap Plan (+ PDF export of the latest one)
     Route::view('/plan', 'plan.index')->name('plan.index');
+    Route::get('/plan/pdf', SkillGapPlanPdfController::class)->name('plan.pdf');
 });
 
 Route::middleware('auth')->group(function () {

@@ -1,59 +1,103 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# PathwayTT
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Employment assistance for job seekers in Trinidad & Tobago. Upload a resume, say what
+you're looking for, and get a ranked list of jobs you are actually eligible for — local
+and internationally remote — with a plain-English explanation of every score. When nothing
+fits, the app pivots to a **Skills Gap Plan**: the skills that would open the most listings
+for the least effort, split into what you can study locally in T&T and what's available
+online, with projections computed from real listings.
 
-## About Laravel
+Built with Laravel 12, Livewire 3, Filament 3 and Tailwind. Runs on a plain shared-hosting
+LAMP account; Docker is provided for local preview only.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Features
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Resume pipeline** — private PDF/DOCX upload, queued parsing (rule-based by default,
+  optional LLM structurer), and an editable review screen; parser output never overwrites
+  what the user has corrected.
+- **Job sources** — manual entry, CSV import, and public remote job boards (Remotive,
+  Jobicy, Himalayas; Remote OK and Arbeitnow optional). Each board's terms are recorded in
+  its adapter and honoured in the UI (named source, follow link to the original posting).
+- **T&T eligibility** — listings restricted to other countries, or to timezone windows
+  that exclude UTC-4, are hard-filtered rather than scored low. Remote realities (contractor
+  vs employee, USD pay, overlap hours) are modelled; local realities (NIS, BIR, CSEC/CAPE)
+  are first-class.
+- **Matching** — 0–100 score across seven weighted factors with a stored line-by-line
+  breakdown; missing required skills cap the score; weights, threshold and FX rate are
+  admin-editable at runtime.
+- **Advisory mode** — gap analysis ranked by impact per week of effort, resources in local
+  and online tracks, non-credential advice (portfolio, USD payments, overlap statement),
+  persisted plan versions with progress, PDF export.
+- **Tracker** — saved → applied → interviewing → offer / rejected, with notes.
+- **Admin (Filament)** — jobs, industries, skills + aliases, learning resources, users,
+  job-sync dashboard with CSV upload, matching weights & FX settings.
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Local setup
 
-## Learning Laravel
+Requirements: PHP 8.3 with `pdo_mysql intl mbstring zip gd`, Composer, MySQL 8, Node 20.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+```bash
+git clone <repo> PathwayTT && cd PathwayTT
+composer install
+cp .env.example .env          # then set DB_* and MAIL_*
+php artisan key:generate
+php artisan migrate --seed    # reference data; demo users/jobs too when APP_ENV=local
+npm install && npm run build
+php artisan serve             # http://localhost:8000
+php artisan queue:work        # second terminal: parsing, matching, plans
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Demo accounts (local only): `demo@pathwaytt.test` and `admin@pathwaytt.test`, password
+`password`. The admin panel is at `/admin`.
 
-## Laravel Sponsors
+Windows/Laragon users: PHP needs a CA bundle for the job-board adapters —
+`curl.cainfo` / `openssl.cafile` in `php.ini` pointing at Laragon's `etc/ssl/cacert.pem`.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+### Docker (preview)
 
-### Premium Partners
+`docker compose up -d --build` → app on http://localhost:8088, Mailpit on :8025. See
+[docs/DOCKER.md](docs/DOCKER.md).
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+## Configuration
 
-## Contributing
+| Variable | Purpose |
+|---|---|
+| `APP_DISPLAY_TIMEZONE` | Display timezone (storage is UTC). Default `America/Port_of_Spain`. |
+| `QUEUE_VIA_SCHEDULER` | `true` on shared hosting: `schedule:run` drains the queue each minute. `false` with a real worker. |
+| `RESUME_PARSER_DRIVER` | `rule` (default, no key) or `llm`. |
+| `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | Used only when the driver is `llm`. Falls back to `rule` on any error. |
+| `JOBSOURCE_*` | Enable/disable each remote board; per-run cap; whether to import listings closed to T&T. |
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+Matching weights, the advisory threshold and the TTD/USD rate live in the database and are
+edited under **Admin → Settings → Matching & FX** (`config/matching.php` holds defaults).
+The seeded FX rate is a placeholder flagged for review.
 
-## Code of Conduct
+## Job sources
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+`php artisan job:sync` runs every enabled source (nightly at 03:00 AST via the scheduler;
+admins can also run it from **Admin → Jobs → Job sync**). Local T&T boards have no public
+APIs — enter local jobs manually or import the CSV template at
+`docs/job-import-template.csv`. Remote boards are throttled per their published limits and
+listings not open to T&T residents are skipped at import by default.
 
-## Security Vulnerabilities
+## Tests
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan test
+```
 
-## License
+Tests always run against in-memory SQLite and never reach the network; the base TestCase
+enforces both.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Deployment
+
+See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for shared-hosting (cPanel) and VPS steps.
+
+## Project layout
+
+- `docs/SPEC.md` — the product specification this build follows.
+- `app/Services/Resume` — text extraction and structuring.
+- `app/Services/JobSources` — source adapters and the ingestor.
+- `app/Services/Matching` — scorer, candidate snapshot, recompute.
+- `app/Services/Advisory` — skills-gap analyzer and planner.
+- `config/matching.php`, `config/advisory.php`, `config/jobsources.php`, `config/resume.php` — all tunables.
