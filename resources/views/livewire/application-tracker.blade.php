@@ -1,20 +1,20 @@
 <div class="space-y-6">
     {{-- Status tabs --}}
-    <div class="bg-white shadow sm:rounded-lg p-3 flex flex-wrap items-center gap-2 text-sm">
+    <div class="card p-3 flex flex-wrap items-center gap-2 text-sm">
         <button type="button" wire:click="$set('status', '')"
-                class="rounded-full px-3 py-1 {{ $status === '' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                class="rounded-full px-3 py-1 {{ $status === '' ? 'bg-brand-700 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
             All ({{ $counts->sum() }})
         </button>
         @foreach ($statuses as $option)
             <button type="button" wire:click="$set('status', '{{ $option->value }}')"
-                    class="rounded-full px-3 py-1 {{ $status === $option->value ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                    class="rounded-full px-3 py-1 {{ $status === $option->value ? 'bg-brand-700 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
                 {{ $option->label() }} ({{ $counts[$option->value] ?? 0 }})
             </button>
         @endforeach
-        <a href="{{ route('matches.index') }}" class="ml-auto text-indigo-600 hover:text-indigo-500">Find more matches →</a>
+        <a href="{{ route('matches.index') }}" class="ml-auto link">Find more matches →</a>
     </div>
 
-    <div class="bg-white shadow sm:rounded-lg divide-y divide-gray-100">
+    <div class="card divide-y divide-gray-100">
         @forelse ($applications as $application)
             @php
                 $job = $application->jobListing;
@@ -47,7 +47,7 @@
                         @endif
                         <span>Updated {{ $application->updated_at->diffForHumans() }}</span>
                         @if ($job->apply_url)
-                            <a href="{{ $job->apply_url }}" target="_blank" rel="noopener noreferrer nofollow" class="text-indigo-600 hover:text-indigo-500">Open posting ↗</a>
+                            <a href="{{ $job->apply_url }}" target="_blank" rel="noopener noreferrer" class="link">Open posting ↗</a>
                         @endif
                     </div>
                 </div>
@@ -55,7 +55,7 @@
                 <div class="flex flex-wrap items-center gap-3 text-sm">
                     @foreach ($application->status->nextStatuses() as $next)
                         <button type="button" wire:click="setStatus({{ $application->id }}, '{{ $next->value }}')"
-                                class="rounded-md border border-gray-300 bg-white px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                class="btn-secondary btn-sm">
                             Mark {{ strtolower($next->label()) }}
                         </button>
                     @endforeach
@@ -76,7 +76,7 @@
                               wire:model="notes.{{ $application->id }}"
                               wire:blur="saveNotes({{ $application->id }})"
                               placeholder="Contact name, interview date, what to prepare…"
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm"></textarea>
+                              class="mt-1 form-control text-sm"></textarea>
                     @error("notes.{$application->id}")
                         <p class="text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -88,7 +88,7 @@
         @empty
             <div class="p-8 text-center text-sm text-gray-500">
                 <p class="font-medium text-gray-900">Nothing tracked yet.</p>
-                <p class="mt-1">Save a job from <a href="{{ route('matches.index') }}" class="text-indigo-600 hover:text-indigo-500">your matches</a> or the <a href="{{ route('jobs.index') }}" class="text-indigo-600 hover:text-indigo-500">job list</a> to track it here.</p>
+                <p class="mt-1">Save a job from <a href="{{ route('matches.index') }}" class="link">your matches</a> or the <a href="{{ route('jobs.index') }}" class="link">job list</a> to track it here.</p>
             </div>
         @endforelse
     </div>

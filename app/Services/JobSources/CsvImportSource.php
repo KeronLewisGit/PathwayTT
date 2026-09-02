@@ -38,6 +38,11 @@ class CsvImportSource implements JobSourceInterface
         return true;
     }
 
+    public function notes(): ?string
+    {
+        return null;
+    }
+
     public function fetch(): iterable
     {
         $disk = Storage::disk(config('jobsources.csv.disk'));

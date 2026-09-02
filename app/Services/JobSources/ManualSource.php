@@ -24,4 +24,9 @@ class ManualSource implements JobSourceInterface
     {
         return [];
     }
+
+    public function notes(): ?string
+    {
+        return null;
+    }
 }

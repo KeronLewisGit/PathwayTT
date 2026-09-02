@@ -14,4 +14,7 @@ interface JobSourceInterface
 
     /** @return iterable<JobDto> */
     public function fetch(): iterable;
+
+    /** Human-readable note about the last fetch (throttled, skipped counts…), shown on the sync dashboard. */
+    public function notes(): ?string;
 }

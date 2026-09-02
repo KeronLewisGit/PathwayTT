@@ -1,0 +1,89 @@
+{
+    "0-legal-notice": "Legal warning - Hey, thanks for using Remotive's API, we appreciate it! Please note that API documentation and access is granted so that developers can share our jobs further. Please do not submit Remotive jobs to third Party websites, including but not limited to: Jooble, Neuvoo, Google Jobs, LinkedIn Jobs. Please link back to the URL found on Remotive AND mention Remotive as a source in order to Remotive to get traffic from your listing. If you don't do that, we'll terminate your API access, sorry! Jobs displayed are delayed by 24 hours, the goal being that jobs are attributed to Remotive on various platforms. Displaying our jobs in order to collect signups/email addresses to show a listing constitutes a breach of our terms of services. We offer a private, paid-for API, please email us at hello(at)remotive(dot)io for more information (starting budget is $5k/mo). Please find out terms of services on https://remotive.com/api-documentation. Please note that there is absolutely no need to request Remotive Job data too frequently. Typically, you only need to GET Remotive job data through this API a couple of times a day (we advise max. 4 times a day). Our data is not changing much faster than that anyway. Note that excessive requests will be blocked. Many thanks (Rodolphe & the Remotive team!)",
+    "job-count": 3,
+    "total-job-count": 18,
+    "jobs": [
+        {
+            "id": 2091068,
+            "url": "https://remotive.com/remote-jobs/marketing/head-of-marketing-communications-2091068",
+            "title": "Head of Marketing & Communications",
+            "company_name": "garden3d",
+            "company_logo": "https://remotive.com/job/2091068/logo",
+            "category": "Marketing",
+            "tags": [
+                "C",
+                "video",
+                "open source",
+                "AI/ML",
+                "Figma",
+                "project management",
+                "editing",
+                "IoT",
+                "testing",
+                "themes",
+                "mobile development"
+            ],
+            "job_type": "contract",
+            "publication_date": "2026-08-15T19:58:15",
+            "candidate_required_location": "Worldwide",
+            "salary": "$150k - $230k",
+            "description": "<p style=\"text-size-adjust: 100%; margin-bottom: 1rem; color: #212529;\"><span class=\"notion-enable-hover\" style=\"text-size-adjust: 100%;\">We are hiring a <span style=\"text-size-adjust: 100%; font-weight: bolder;\">Head of Marketing &amp; Communications</span> to tell the garden3d story across the internet, from wherever in the world you happen to be.</span></p>\n<p style=\"text-size-adjust: 100%; mar",
+            "company_logo_url": "https://remotive.com/job/2091068/logo"
+        },
+        {
+            "id": 1680495,
+            "url": "https://remotive.com/remote-jobs/marketing/remote-office-assistant-1680495",
+            "title": "Remote Office Assistant",
+            "company_name": "Coalition Technologies ",
+            "company_logo": "https://remotive.com/job/1680495/logo",
+            "category": "Marketing",
+            "tags": [
+                "CSS",
+                "excel",
+                "frontend",
+                "git",
+                "html",
+                "illustrator",
+                "magento",
+                "photoshop",
+                "php",
+                "shopify",
+                "wordpress",
+                "MySQL",
+                "startup",
+                "responsive",
+                "themes",
+                "bootstrap",
+                "insurance",
+                "jQuery",
+                "Ajax"
+            ],
+            "job_type": "full_time",
+            "publication_date": "2026-08-11T20:18:02",
+            "candidate_required_location": "Worldwide",
+            "salary": "$31,2k- $52k",
+            "description": "<p class=\"h3\">Coalition Technologies is seeking a reliable, detail-oriented, and highly organized Remote Office Assistant to support administrative, bookkeeping, billing, reporting, data entry, and internal operations tasks. This role is ideal for someone with strong communication skills, discretion, attention to detail, and a willingness to learn and grow within a fast-paced remote work environme",
+            "company_logo_url": "https://remotive.com/job/1680495/logo"
+        },
+        {
+            "id": 2086540,
+            "url": "https://remotive.com/remote-jobs/sales/inside-sales-contractor-2086540",
+            "title": "Inside Sales Contractor",
+            "company_name": "Credit Wellness, LLC",
+            "company_logo": "https://remotive.com/job/2086540/logo",
+            "category": "Sales",
+            "tags": [
+                "CRM",
+                "google sheets",
+                "financial services",
+                "Inside Sales"
+            ],
+            "job_type": "full_time",
+            "publication_date": "2026-08-08T21:48:06",
+            "candidate_required_location": "Worldwide",
+            "salary": "OTE $25k - $35k",
+            "description": "<p dir=\"ltr\" style=\"line-height: 1.38; background-color: #ffffff; margin-top: 0pt; margin-bottom: 0pt; padding: 0pt 0pt 12pt 0pt;\"><span style=\"color: #2d2d2d; background-color: transparent; font-weight: bold; font-style: normal; font-variant: normal; text-decoration: none; vertical-align: baseline; white-space: pre-wrap;\">About Us</span></p>\n<p dir=\"ltr\" style=\"line-height: 1.38; background-color",
+            "company_logo_url": "https://remotive.com/job/2086540/logo"
+        }
+    ]
+}

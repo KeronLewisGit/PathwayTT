@@ -1,6 +1,6 @@
 <div class="space-y-6" @if ($generating) wire:poll.4s @endif>
     {{-- Status --}}
-    <div class="bg-white shadow sm:rounded-lg p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+    <div class="card p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
         <div class="text-gray-600">
             @if ($generating)
                 <span class="inline-flex items-center gap-2">
@@ -28,12 +28,12 @@
 
         <div class="flex items-center gap-4">
             <button type="button" wire:click="generate" @if ($generating) disabled @endif class="text-gray-600 hover:text-gray-900 disabled:opacity-50">Regenerate</button>
-            <a href="{{ route('matches.index') }}" class="text-indigo-600 hover:text-indigo-500">Back to matches</a>
+            <a href="{{ route('matches.index') }}" class="link">Back to matches</a>
         </div>
     </div>
 
     @unless ($hasProfile)
-        <div class="rounded-md bg-amber-50 border border-amber-200 p-4 text-sm text-amber-900">
+        <div class="callout-warning">
             <strong>Start with your resume.</strong>
             <a href="{{ route('resume.index') }}" class="underline">Upload it</a> or
             <a href="{{ route('profile.review') }}" class="underline">fill in your profile</a>
@@ -49,12 +49,12 @@
             $closed = collect($payload['gaps'] ?? [])->filter(fn ($g) => in_array($g['skill']['id'], $doneSkillIds, true));
         @endphp
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-3">
-            <div class="bg-white shadow sm:rounded-lg p-4">
+            <div class="card p-4">
                 <p class="text-xs uppercase tracking-wide text-gray-500">Best match when planned</p>
                 <p class="mt-1 text-2xl font-semibold text-gray-900">{{ $then }}<span class="text-sm text-gray-400"> / 100</span></p>
                 <p class="text-xs text-gray-500">{{ $payload['current']['above_threshold'] ?? 0 }} of {{ $payload['current']['eligible_count'] ?? 0 }} eligible listings at or above {{ $threshold }}</p>
             </div>
-            <div class="bg-white shadow sm:rounded-lg p-4">
+            <div class="card p-4">
                 <p class="text-xs uppercase tracking-wide text-gray-500">Best match now</p>
                 <p class="mt-1 text-2xl font-semibold {{ $currentBest > $then ? 'text-green-700' : 'text-gray-900' }}">{{ $currentBest }}<span class="text-sm text-gray-400"> / 100</span></p>
                 @if ($currentBest > $then)
@@ -63,7 +63,7 @@
                     <p class="text-xs text-gray-500">Recomputed as you update your profile</p>
                 @endif
             </div>
-            <div class="bg-white shadow sm:rounded-lg p-4">
+            <div class="card p-4">
                 <p class="text-xs uppercase tracking-wide text-gray-500">Gaps closed</p>
                 <p class="mt-1 text-2xl font-semibold text-gray-900">{{ $closed->count() }}<span class="text-sm text-gray-400"> / {{ count($payload['gaps'] ?? []) }}</span></p>
                 <p class="text-xs text-gray-500">Skills from this plan now on your profile</p>
@@ -71,7 +71,7 @@
         </div>
 
         @if (empty($payload['gaps']))
-            <div class="rounded-md bg-green-50 border border-green-200 p-4 text-sm text-green-900">
+            <div class="callout-success">
                 @if (($payload['current']['eligible_count'] ?? 0) === 0)
                     There are no open listings in your scope to plan against yet. New jobs are checked nightly.
                 @else
@@ -82,7 +82,7 @@
 
         {{-- Three phases --}}
         @foreach ($payload['phases'] ?? [] as $phase)
-            <section class="bg-white shadow sm:rounded-lg">
+            <section class="card">
                 <div class="px-5 py-4 border-b border-gray-100 flex items-baseline justify-between gap-3">
                     <h3 class="text-base font-semibold text-gray-900">{{ $phase['title'] }}</h3>
                     <span class="text-xs text-gray-500">{{ $phase['window'] }} · {{ count($phase['items']) }} {{ Str::plural('item', count($phase['items'])) }}</span>
@@ -98,10 +98,10 @@
                                 <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                                     <div class="min-w-0">
                                         <div class="flex flex-wrap items-center gap-2">
-                                            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-800 text-xs font-semibold text-white">{{ $item['rank'] }}</span>
+                                            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-brand-700 text-xs font-semibold text-white">{{ $item['rank'] }}</span>
                                             <h4 class="text-base font-semibold text-gray-900 {{ $done ? 'line-through text-gray-400' : '' }}">{{ $item['skill']['name'] }}</h4>
                                             @if ($done)
-                                                <span class="inline-flex rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Done — on your profile</span>
+                                                <span class="badge-success">Done — on your profile</span>
                                             @endif
                                         </div>
                                         <p class="mt-1 text-sm text-gray-700">
@@ -145,7 +145,7 @@
 
                                 @unless ($done)
                                     <p class="mt-3 text-xs text-gray-500">
-                                        Already have this skill? <a href="{{ route('profile.review') }}" class="text-indigo-600 hover:text-indigo-500">Add it to your profile</a> and your matches recompute automatically.
+                                        Already have this skill? <a href="{{ route('profile.review') }}" class="link">Add it to your profile</a> and your matches recompute automatically.
                                     </p>
                                 @endunless
                             </li>
@@ -157,7 +157,7 @@
 
         {{-- Non-credential advice --}}
         @if (! empty($payload['advice']))
-            <section class="bg-white shadow sm:rounded-lg">
+            <section class="card">
                 <div class="px-5 py-4 border-b border-gray-100">
                     <h3 class="text-base font-semibold text-gray-900">Beyond courses</h3>
                     <p class="text-xs text-gray-500">Suggested because the listings in your scope call for it.</p>
@@ -175,7 +175,7 @@
 
         {{-- History --}}
         @if ($history->count() > 1)
-            <section class="bg-white shadow sm:rounded-lg p-5 text-sm">
+            <section class="card p-5 text-sm">
                 <h3 class="text-sm font-semibold text-gray-900">Previous plans</h3>
                 <ul class="mt-2 space-y-1 text-gray-600">
                     @foreach ($history as $past)

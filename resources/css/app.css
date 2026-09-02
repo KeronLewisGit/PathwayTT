@@ -1,3 +1,95 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Shared component classes. Views use these instead of repeating utility
+ * strings so the whole app changes together. Keep this list short.
+ */
+@layer components {
+    /* Surfaces */
+    .card {
+        @apply bg-white rounded-lg shadow-card ring-1 ring-gray-900/5;
+    }
+    .card-header {
+        @apply px-5 py-4 border-b border-gray-100;
+    }
+    .card-title {
+        @apply text-base font-semibold text-gray-900;
+    }
+
+    /* Text links */
+    .link {
+        @apply text-brand-600 hover:text-brand-800 underline-offset-2 hover:underline;
+    }
+    .link-muted {
+        @apply text-gray-600 hover:text-gray-900;
+    }
+
+    /* Buttons */
+    .btn {
+        @apply inline-flex items-center justify-center gap-1.5 rounded-md px-4 py-2 text-sm font-semibold transition
+               focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed;
+    }
+    .btn-primary {
+        @apply btn bg-brand-700 text-white hover:bg-brand-800 active:bg-brand-900;
+    }
+    .btn-secondary {
+        @apply btn bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50;
+    }
+    .btn-danger {
+        @apply btn bg-red-600 text-white hover:bg-red-700;
+    }
+    .btn-sm {
+        @apply px-3 py-1.5 text-xs;
+    }
+
+    /* Form controls (inputs come from @tailwindcss/forms; this sets the focus colour) */
+    .form-control {
+        @apply block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 text-sm;
+    }
+    .form-check {
+        @apply rounded border-gray-300 text-brand-600 shadow-sm focus:ring-brand-500;
+    }
+
+    /* Status badges */
+    .badge {
+        @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium;
+    }
+    .badge-neutral { @apply badge bg-gray-100 text-gray-700; }
+    .badge-brand   { @apply badge bg-brand-50 text-brand-700; }
+    .badge-success { @apply badge bg-green-100 text-green-800; }
+    .badge-warning { @apply badge bg-amber-100 text-amber-800; }
+    .badge-danger  { @apply badge bg-red-100 text-red-800; }
+    .badge-info    { @apply badge bg-sky-100 text-sky-800; }
+
+    /* Callouts */
+    .callout {
+        @apply rounded-lg border p-4 text-sm;
+    }
+    .callout-info    { @apply callout border-brand-200 bg-brand-50 text-brand-900; }
+    .callout-warning { @apply callout border-amber-200 bg-amber-50 text-amber-900; }
+    .callout-danger  { @apply callout border-red-200 bg-red-50 text-red-800; }
+    .callout-success { @apply callout border-green-200 bg-green-50 text-green-900; }
+    .callout-muted   { @apply callout border-gray-200 bg-gray-50 text-gray-700; }
+
+    /* Score bubble (matches, job page) */
+    .score {
+        @apply inline-flex items-center justify-center rounded-full font-bold;
+    }
+    .score-high { @apply score bg-green-100 text-green-800; }
+    .score-mid  { @apply score bg-accent-100 text-accent-800; }
+    .score-low  { @apply score bg-gray-100 text-gray-600; }
+
+    /* Section label */
+    .eyebrow {
+        @apply text-xs font-semibold uppercase tracking-wide text-gray-500;
+    }
+
+    /* Anything wide (tables, code) scrolls inside its own box on small screens */
+    .scroll-x {
+        @apply overflow-x-auto -mx-1 px-1;
+    }
+}
+
+[x-cloak] { display: none !important; }

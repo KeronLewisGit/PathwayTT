@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
+use Illuminate\Support\Facades\Http;
 use RuntimeException;
 
 abstract class TestCase extends BaseTestCase
@@ -17,6 +18,7 @@ abstract class TestCase extends BaseTestCase
         'APP_ENV', 'APP_MAINTENANCE_DRIVER', 'BCRYPT_ROUNDS', 'BROADCAST_CONNECTION',
         'CACHE_STORE', 'DB_CONNECTION', 'DB_DATABASE', 'DB_URL', 'MAIL_MAILER',
         'QUEUE_CONNECTION', 'QUEUE_VIA_SCHEDULER', 'SESSION_DRIVER', 'LOG_CHANNEL',
+        'JOBSOURCE_REMOTIVE', 'JOBSOURCE_JOBICY', 'JOBSOURCE_HIMALAYAS', 'JOBSOURCE_REMOTEOK', 'JOBSOURCE_ARBEITNOW',
     ];
 
     public function createApplication()
@@ -47,5 +49,13 @@ abstract class TestCase extends BaseTestCase
         }
 
         return parent::setUpTraits();
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // No test may reach the internet: job-board adapters must be faked.
+        Http::preventStrayRequests();
     }
 }

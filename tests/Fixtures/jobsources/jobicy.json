@@ -1,0 +1,76 @@
+{
+    "apiVersion": "2.2.16",
+    "friendlyNotice": "Thanks for using Jobicy API! Please ensure Jobicy is clearly credited with a direct link to the source, and all application buttons redirect to the original job URL provided in this feed. That’s all! You might be building something amazing, we wish you the best of luck!",
+    "jobCount": 3,
+    "jobs": [
+        {
+            "id": 152361,
+            "url": "https://jobicy.com/jobs/152361-medical-director-clinical-program-design",
+            "jobSlug": "152361-medical-director-clinical-program-design",
+            "jobTitle": "Medical Director, Clinical Program Design",
+            "companyName": "Wheel",
+            "companyLogo": "https://jobicy.com/data/server-nyc0409/galaxy/mercury/2021/01/WRILS-210112005722-210970.jpg",
+            "jobIndustry": [
+                "Healthcare & Medical"
+            ],
+            "jobType": [
+                "Full-Time"
+            ],
+            "jobGeo": "USA",
+            "jobLevel": "Director",
+            "jobExcerpt": "Job Title: Medical Director, Clinical Program Design Job Location (Remote): Remote, USA About the Company Wheel is evolving the traditional care ecosystem by equipping the nation's most innovative companies with a premier platform to deliver high-quality virtual care at scale. We offer proven strategies and cutting-edge technologies to foster consumer engagement, build brand loyalty, and&hellip;",
+            "jobDescription": "<p><strong>Job Title: </strong>Medical Director, Clinical Program Design </p>\n<p><strong>Job Location (Remote):</strong> Remote, USA</p>\n<p><strong>About the Company</strong></p>\n<p>Wheel is evolving the traditional care ecosystem by equipping the nation's most innovative companies with a premier platform to deliver high-quality virtual care at scale. We offer proven strategies and cutting-edge te",
+            "pubDate": "2026-09-02T12:27:34+00:00",
+            "salaryMin": 250000,
+            "salaryMax": 290000,
+            "salaryCurrency": "USD",
+            "salaryPeriod": "yearly"
+        },
+        {
+            "id": 147870,
+            "url": "https://jobicy.com/jobs/147870-senior-payroll-analyst",
+            "jobSlug": "147870-senior-payroll-analyst",
+            "jobTitle": "Senior Payroll Analyst",
+            "companyName": "DoorDash",
+            "companyLogo": "https://jobicy.com/data/server-nyc0409/galaxy/mercury/2025/06/82fc4967-221-1.jpeg",
+            "jobIndustry": [
+                "Finance & Accounting"
+            ],
+            "jobType": [
+                "Full-Time"
+            ],
+            "jobGeo": "USA",
+            "jobLevel": "Senior",
+            "jobExcerpt": "About the TeamThe DoorDash Global Payroll Team is on a mission to deliver accurate, timely, and seamless payroll experiences that support our employees across North America and beyond. We operate at the intersection of Accounting, Equity, HR, Compensation, Legal, and Tax, which gives us a unique opportunity to create value across the organization. Our team&hellip;",
+            "jobDescription": "<h2>About the Team</h2><p>The DoorDash Global Payroll Team is on a mission to deliver accurate, timely, and seamless payroll experiences that support our employees across North America and beyond. We operate at the intersection of Accounting, Equity, HR, Compensation, Legal, and Tax, which gives us a unique opportunity to create value across the organization. Our team plays a critical role in ensu",
+            "pubDate": "2026-09-02T06:20:06+00:00",
+            "salaryMin": 95200,
+            "salaryMax": 140000,
+            "salaryCurrency": "USD",
+            "salaryPeriod": "yearly"
+        },
+        {
+            "id": 150789,
+            "url": "https://jobicy.com/jobs/150789-manager-retail-partnerships",
+            "jobSlug": "150789-manager-retail-partnerships",
+            "jobTitle": "Manager, Retail Partnerships",
+            "companyName": "ANGI",
+            "companyLogo": "https://jobicy.com/data/server-nyc0409/galaxy/mercury/2021/09/50cccf084c34089de2274f72e18841d0.jpg",
+            "jobIndustry": [
+                "Business Development"
+            ],
+            "jobType": [
+                "Full-Time"
+            ],
+            "jobGeo": "USA",
+            "jobLevel": "Senior",
+            "jobExcerpt": "For over 30 years, Angi has powered the future of the home services industry, creating an environment where homeowners and pros benefit from more jobs done well. For homeowners, our platform is a reliable way to find skilled pros. For pros, we're a reliable business partner who helps them find the winnable work they want,&hellip;",
+            "jobDescription": "<p>For over 30 years, Angi has powered the future of the home services industry, creating an environment where homeowners and pros benefit from more jobs done well.</p>\n<p>For homeowners, our platform is a reliable way to find skilled pros. For pros, we're a reliable business partner who helps them find the winnable work they want, when they want. For employees, we're an amazing place to call home",
+            "pubDate": "2026-09-02T06:15:06+00:00",
+            "salaryMin": 95000,
+            "salaryMax": 140000,
+            "salaryCurrency": "USD",
+            "salaryPeriod": "yearly"
+        }
+    ]
+}

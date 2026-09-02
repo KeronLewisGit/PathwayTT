@@ -37,6 +37,12 @@
         <env name="QUEUE_VIA_SCHEDULER" value="true" force="true"/>
         <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="LOG_CHANNEL" value="null" force="true"/>
+        <!-- Remote job boards are off under test; adapter tests enable them explicitly with Http::fake(). -->
+        <env name="JOBSOURCE_REMOTIVE" value="false" force="true"/>
+        <env name="JOBSOURCE_JOBICY" value="false" force="true"/>
+        <env name="JOBSOURCE_HIMALAYAS" value="false" force="true"/>
+        <env name="JOBSOURCE_REMOTEOK" value="false" force="true"/>
+        <env name="JOBSOURCE_ARBEITNOW" value="false" force="true"/>
         <env name="PULSE_ENABLED" value="false" force="true"/>
         <env name="TELESCOPE_ENABLED" value="false" force="true"/>
         <env name="NIGHTWATCH_ENABLED" value="false" force="true"/>

@@ -53,9 +53,11 @@ class JobSyncCommand extends Command
                     'fetched_count' => $fetched,
                     'created_count' => $created,
                     'updated_count' => $updated,
+                    'notes' => $source->notes(),
                 ]);
 
-                $this->info("[{$source->key()}] fetched {$fetched}, created {$created}, updated {$updated}");
+                $this->info("[{$source->key()}] fetched {$fetched}, created {$created}, updated {$updated}"
+                    .($source->notes() ? " — {$source->notes()}" : ''));
             } catch (Throwable $e) {
                 $run->update([
                     'finished_at' => now(),
@@ -63,6 +65,7 @@ class JobSyncCommand extends Command
                     'created_count' => $created,
                     'updated_count' => $updated,
                     'error' => $e->getMessage(),
+                    'notes' => $source->notes(),
                 ]);
 
                 $this->error("[{$source->key()}] failed: {$e->getMessage()}");

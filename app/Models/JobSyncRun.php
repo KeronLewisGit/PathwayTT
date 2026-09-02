@@ -8,7 +8,7 @@ class JobSyncRun extends Model
 {
     protected $fillable = [
         'source', 'started_at', 'finished_at',
-        'fetched_count', 'created_count', 'updated_count', 'error',
+        'fetched_count', 'created_count', 'updated_count', 'error', 'notes',
     ];
 
     protected function casts(): array

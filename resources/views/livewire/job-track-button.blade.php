@@ -1,7 +1,7 @@
 <div class="flex flex-wrap items-center gap-2 text-sm">
     @if ($application === null)
         <button type="button" wire:click="save" wire:loading.attr="disabled"
-                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-1.5 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                class="btn-secondary btn-sm">
             ☆ Save job
         </button>
     @else
@@ -19,7 +19,7 @@
 
         @foreach ($application->status->nextStatuses() as $next)
             <button type="button" wire:click="setStatus('{{ $next->value }}')" wire:loading.attr="disabled"
-                    class="text-xs font-medium text-indigo-600 hover:text-indigo-500">
+                    class="text-xs font-medium link">
                 Mark {{ strtolower($next->label()) }}
             </button>
         @endforeach

@@ -1,6 +1,6 @@
 <div @if ($this->isProcessing) wire:poll.5s @endif>
     {{-- Upload form --}}
-    <div class="bg-white shadow sm:rounded-lg p-6">
+    <div class="card p-6">
         <h3 class="text-lg font-medium text-gray-900">Upload your resume</h3>
 
         <p class="mt-2 text-sm text-gray-600">
@@ -21,7 +21,7 @@
                 type="file"
                 wire:model="file"
                 accept=".pdf,.docx"
-                class="block w-full text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-gray-800 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-gray-700"
+                class="block w-full text-sm text-gray-700 file:mr-4 file:rounded-md file:border-0 file:bg-brand-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-brand-800"
             />
 
             @error('file')
@@ -41,7 +41,7 @@
     </div>
 
     {{-- Resume list --}}
-    <div class="mt-6 bg-white shadow sm:rounded-lg divide-y divide-gray-100">
+    <div class="mt-6 card divide-y divide-gray-100">
         @forelse ($this->resumes as $resume)
             <div class="flex items-center justify-between gap-4 p-4">
                 <div class="min-w-0">
@@ -70,14 +70,14 @@
                             @break
 
                         @case(App\Enums\ParseStatus::Parsed)
-                            <span class="inline-flex rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">Parsed</span>
-                            <a href="{{ route('profile.review') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">
+                            <span class="badge-success">Parsed</span>
+                            <a href="{{ route('profile.review') }}" class="text-sm font-medium link">
                                 Review profile →
                             </a>
                             @break
 
                         @case(App\Enums\ParseStatus::Failed)
-                            <span class="inline-flex rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-800">Failed</span>
+                            <span class="badge-danger">Failed</span>
                             @break
                     @endswitch
 

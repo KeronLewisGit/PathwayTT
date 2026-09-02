@@ -1,4 +1,4 @@
-<div class="bg-white shadow sm:rounded-lg p-6">
+<div class="card p-6">
     <h3 class="text-lg font-medium text-gray-900">What are you looking for?</h3>
     <p class="mt-1 text-sm text-gray-500">
         These preferences pre-filter the job list and drive your match scores.
@@ -9,7 +9,7 @@
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
                 <x-input-label for="industry_id" value="Target industry" />
-                <select id="industry_id" wire:model="industry_id" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                <select id="industry_id" wire:model="industry_id" class="mt-1 form-control">
                     <option value="">— Any industry —</option>
                     @foreach ($this->industries as $industry)
                         <option value="{{ $industry->id }}">{{ $industry->name }}</option>
@@ -20,7 +20,7 @@
 
             <div>
                 <x-input-label for="seniority" value="Desired seniority" />
-                <select id="seniority" wire:model="seniority" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                <select id="seniority" wire:model="seniority" class="mt-1 form-control">
                     <option value="">— Any —</option>
                     @foreach ($seniorities as $value => $label)
                         <option value="{{ $value }}">{{ $label }}</option>
@@ -39,7 +39,7 @@
             <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 @foreach ($arrangements as $arrangement)
                     <label class="flex items-center gap-2 text-sm text-gray-700">
-                        <input type="checkbox" wire:model="work_arrangements" value="{{ $arrangement->value }}" class="rounded border-gray-300 text-gray-800 shadow-sm" />
+                        <input type="checkbox" wire:model="work_arrangements" value="{{ $arrangement->value }}" class="form-check" />
                         {{ $arrangement->label() }}
                     </label>
                 @endforeach
@@ -52,7 +52,7 @@
             <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
                 @foreach ($employmentTypes as $type)
                     <label class="flex items-center gap-2 text-sm text-gray-700">
-                        <input type="checkbox" wire:model="employment_types" value="{{ $type->value }}" class="rounded border-gray-300 text-gray-800 shadow-sm" />
+                        <input type="checkbox" wire:model="employment_types" value="{{ $type->value }}" class="form-check" />
                         {{ $type->label() }}
                     </label>
                 @endforeach
@@ -70,14 +70,14 @@
                 </div>
                 <div>
                     <x-input-label for="min_salary_currency" value="Currency" />
-                    <select id="min_salary_currency" wire:model="min_salary_currency" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <select id="min_salary_currency" wire:model="min_salary_currency" class="mt-1 form-control">
                         <option value="TTD">TTD</option>
                         <option value="USD">USD</option>
                     </select>
                 </div>
                 <div>
                     <x-input-label for="min_salary_period" value="Per" />
-                    <select id="min_salary_period" wire:model="min_salary_period" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <select id="min_salary_period" wire:model="min_salary_period" class="mt-1 form-control">
                         <option value="hourly">Hour</option>
                         <option value="monthly">Month</option>
                         <option value="yearly">Year</option>
@@ -88,7 +88,7 @@
 
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <label class="flex items-center gap-2 text-sm text-gray-700">
-                <input type="checkbox" wire:model="willing_to_relocate" class="rounded border-gray-300 text-gray-800 shadow-sm" />
+                <input type="checkbox" wire:model="willing_to_relocate" class="form-check" />
                 Willing to relocate within T&amp;T (Trinidad or Tobago)
             </label>
 
@@ -104,7 +104,7 @@
 
             @if (session('preferences-saved'))
                 <span class="text-sm font-medium text-green-600">{{ session('preferences-saved') }}</span>
-                <a href="{{ route('jobs.index') }}" class="text-sm font-medium text-indigo-600 hover:text-indigo-500">See jobs →</a>
+                <a href="{{ route('jobs.index') }}" class="text-sm font-medium link">See jobs →</a>
             @endif
         </div>
     </form>

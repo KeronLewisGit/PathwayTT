@@ -9,7 +9,8 @@
     @if ($components === [])
         <p class="text-gray-500">No breakdown available.</p>
     @else
-        <table class="w-full text-left">
+        <div class="scroll-x">
+        <table class="w-full min-w-[28rem] text-left">
             <thead class="text-xs uppercase tracking-wide text-gray-500">
                 <tr>
                     <th class="py-1 pr-3 font-medium">Factor</th>
@@ -45,6 +46,7 @@
                 </tr>
             </tfoot>
         </table>
+        </div>
         <p class="mt-2 text-xs text-gray-500">
             Factors a listing doesn't state are marked n/a and their weight is shared across the rest.
         </p>

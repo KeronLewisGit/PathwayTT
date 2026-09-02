@@ -1,6 +1,6 @@
 <div class="space-y-6" @if ($hasProfile && $lastComputed === null) wire:poll.4s @endif>
     {{-- Status bar --}}
-    <div class="bg-white shadow sm:rounded-lg p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
+    <div class="card p-4 flex flex-wrap items-center justify-between gap-3 text-sm">
         <div class="text-gray-600">
             @if ($lastComputed)
                 {{ $matches->total() }} eligible {{ Str::plural('match', $matches->total()) }}
@@ -26,18 +26,18 @@
         <div class="flex items-center gap-4">
             @if ($ineligibleCount)
                 <label class="flex items-center gap-2 text-gray-700">
-                    <input type="checkbox" wire:model.live="showIneligible" class="rounded border-gray-300 text-gray-800 shadow-sm" />
+                    <input type="checkbox" wire:model.live="showIneligible" class="form-check" />
                     Show ineligible
                 </label>
             @endif
             <button type="button" wire:click="recompute" class="text-gray-600 hover:text-gray-900">Recompute</button>
-            <a href="{{ route('preferences.index') }}" class="text-indigo-600 hover:text-indigo-500">Edit preferences</a>
+            <a href="{{ route('preferences.index') }}" class="link">Edit preferences</a>
         </div>
     </div>
 
     {{-- Onboarding nudges --}}
     @unless ($hasProfile)
-        <div class="rounded-md bg-amber-50 border border-amber-200 p-4 text-sm text-amber-900">
+        <div class="callout-warning">
             <strong>Start with your resume.</strong>
             <a href="{{ route('resume.index') }}" class="underline">Upload it</a> or
             <a href="{{ route('profile.review') }}" class="underline">fill in your profile</a>
@@ -46,7 +46,7 @@
     @endunless
 
     @if ($hasProfile && ! $hasPreferences)
-        <div class="rounded-md bg-blue-50 border border-blue-200 p-4 text-sm text-blue-900">
+        <div class="callout-info">
             <a href="{{ route('preferences.index') }}" class="underline font-medium">Set your job preferences</a>
             — target industry and work arrangement count for 20% of every score.
         </div>
@@ -54,7 +54,7 @@
 
     {{-- Advisory pivot: never an empty results page with no next action --}}
     @if ($advisory && $lastComputed)
-        <div class="rounded-lg border border-indigo-200 bg-indigo-50 p-5 text-sm text-indigo-950">
+        <div class="callout-info p-5">
             <h3 class="text-base font-semibold">
                 @if ($matches->total() === 0)
                     No eligible listings match your profile yet
@@ -69,7 +69,7 @@
                     @foreach ($topGaps as $gap)
                         <li class="flex items-center justify-between rounded bg-white/70 px-3 py-1.5">
                             <span class="font-medium">{{ $gap['name'] }}</span>
-                            <span class="text-xs text-indigo-700">required by {{ $gap['jobs'] }} {{ Str::plural('listing', $gap['jobs']) }}</span>
+                            <span class="text-xs text-brand-700">required by {{ $gap['jobs'] }} {{ Str::plural('listing', $gap['jobs']) }}</span>
                         </li>
                     @endforeach
                 </ul>
@@ -78,15 +78,15 @@
             <p class="mt-3">
                 Already have one of these? <a href="{{ route('profile.review') }}" class="underline font-medium">Add it to your profile</a> and recompute.
             </p>
-            <a href="{{ route('plan.index') }}" class="mt-3 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+            <a href="{{ route('plan.index') }}" class="mt-3 btn-primary">
                 Open my Skills Gap Plan →
             </a>
-            <p class="mt-2 text-xs text-indigo-800">Ranked by impact per week of effort, with local T&amp;T and online options and the exact listings each skill would unlock.</p>
+            <p class="mt-2 text-xs text-brand-800">Ranked by impact per week of effort, with local T&amp;T and online options and the exact listings each skill would unlock.</p>
         </div>
     @endif
 
     {{-- Ranked matches --}}
-    <div class="bg-white shadow sm:rounded-lg divide-y divide-gray-100">
+    <div class="card divide-y divide-gray-100">
         @forelse ($matches as $match)
             @php
                 $job = $match->jobListing;
@@ -140,7 +140,7 @@
                         @endif
 
                         <div class="mt-3 flex flex-wrap items-center gap-4">
-                            <button type="button" @click="open = !open" class="text-sm text-indigo-600 hover:text-indigo-500">
+                            <button type="button" @click="open = !open" class="text-sm link">
                                 <span x-text="open ? 'Hide breakdown' : 'Why this score?'"></span>
                             </button>
                             @livewire(App\Livewire\JobTrackButton::class, ['jobListingId' => $job->id], key('track-'.$job->id))
@@ -155,7 +155,7 @@
                         @if ($job->posted_at)
                             <div>Posted {{ $job->posted_at->timezone(config('app.display_timezone'))->format('d M Y') }}</div>
                         @endif
-                        <a href="{{ route('jobs.show', $job) }}" class="mt-1 inline-block text-sm font-medium text-indigo-600 hover:text-indigo-500">Details →</a>
+                        <a href="{{ route('jobs.show', $job) }}" class="mt-1 inline-block text-sm font-medium link">Details →</a>
                     </div>
                 </div>
             </article>
@@ -170,7 +170,7 @@
 
     {{-- Ineligible (hard-filtered) listings, on request --}}
     @if ($showIneligible && $ineligible->isNotEmpty())
-        <div class="bg-white shadow sm:rounded-lg">
+        <div class="card">
             <div class="p-4 border-b border-gray-100">
                 <h3 class="text-sm font-semibold text-gray-900">Not eligible from Trinidad &amp; Tobago</h3>
                 <p class="text-xs text-gray-500">These fail a hard rule (location restriction, work permit, closed) so they aren't scored.</p>

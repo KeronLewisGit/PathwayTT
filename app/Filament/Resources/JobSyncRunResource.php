@@ -54,7 +54,10 @@ class JobSyncRunResource extends Resource
                 Tables\Columns\TextColumn::make('fetched_count')->label('Fetched')->numeric(),
                 Tables\Columns\TextColumn::make('created_count')->label('Created')->numeric(),
                 Tables\Columns\TextColumn::make('updated_count')->label('Updated')->numeric(),
-                Tables\Columns\TextColumn::make('error')->limit(80)->wrap()->tooltip(fn (JobSyncRun $record) => $record->error),
+                Tables\Columns\TextColumn::make('notes')->limit(60)->wrap()->placeholder('—')
+                    ->tooltip(fn (JobSyncRun $record) => $record->notes),
+                Tables\Columns\TextColumn::make('error')->limit(80)->wrap()->placeholder('—')
+                    ->tooltip(fn (JobSyncRun $record) => $record->error),
             ])
             ->filters([
                 Tables\Filters\SelectFilter::make('source')

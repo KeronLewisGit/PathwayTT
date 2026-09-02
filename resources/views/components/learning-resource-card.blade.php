@@ -7,7 +7,7 @@
             <p class="text-gray-700">{{ $resource['title'] }}</p>
         </div>
         @if ($resource['url'])
-            <a href="{{ $resource['url'] }}" target="_blank" rel="noopener noreferrer nofollow" class="shrink-0 text-xs font-medium text-indigo-600 hover:text-indigo-500">Visit ↗</a>
+            <a href="{{ $resource['url'] }}" target="_blank" rel="noopener noreferrer" class="shrink-0 text-xs font-medium link">Visit ↗</a>
         @endif
     </div>
 

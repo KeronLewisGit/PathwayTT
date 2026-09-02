@@ -1,6 +1,6 @@
 <div class="space-y-8">
     {{-- ── Profile details ─────────────────────────────────────────── --}}
-    <section class="bg-white shadow sm:rounded-lg p-6">
+    <section class="card p-6">
         <h3 class="text-lg font-medium text-gray-900">Your details</h3>
         <p class="mt-1 text-sm text-gray-500">
             Extracted from your resume where possible — please check and correct.
@@ -21,7 +21,7 @@
 
             <div>
                 <x-input-label for="region" value="Region (T&amp;T)" />
-                <select id="region" wire:model="region" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                <select id="region" wire:model="region" class="mt-1 form-control">
                     <option value="">— Select —</option>
                     @foreach (App\Livewire\ProfileReview::REGIONS as $region)
                         <option value="{{ $region }}">{{ $region }}</option>
@@ -36,7 +36,7 @@
 
             <div>
                 <x-input-label for="highest_education_level" value="Highest qualification" />
-                <select id="highest_education_level" wire:model="highest_education_level" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                <select id="highest_education_level" wire:model="highest_education_level" class="mt-1 form-control">
                     <option value="">— Select —</option>
                     @foreach ($qualificationTypes as $type)
                         <option value="{{ $type->value }}">{{ $type->label() }}</option>
@@ -51,7 +51,7 @@
 
             <div class="sm:col-span-2">
                 <x-input-label for="summary" value="Professional summary" />
-                <textarea id="summary" wire:model="summary" rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                <textarea id="summary" wire:model="summary" rows="3" class="mt-1 form-control"></textarea>
             </div>
 
             <fieldset class="sm:col-span-2">
@@ -85,7 +85,7 @@
     </section>
 
     {{-- ── Skills ──────────────────────────────────────────────────── --}}
-    <section class="bg-white shadow sm:rounded-lg p-6">
+    <section class="card p-6">
         <h3 class="text-lg font-medium text-gray-900">Skills</h3>
         <p class="mt-1 text-sm text-gray-500">Confirm what we found and add anything missing. Rate yourself 1–5.</p>
 
@@ -103,7 +103,7 @@
                         @endfor
                     </select>
                     @if ($skill->pivot->evidence_source === 'resume')
-                        <span class="text-[10px] uppercase tracking-wide text-indigo-500" title="Found in your resume">resume</span>
+                        <span class="text-[10px] uppercase tracking-wide text-brand-500" title="Found in your resume">resume</span>
                     @endif
                     <button type="button" wire:click="removeSkill({{ $skill->id }})" class="text-gray-400 hover:text-red-500">&times;</button>
                 </span>
@@ -138,7 +138,7 @@
     </section>
 
     {{-- ── Work history ────────────────────────────────────────────── --}}
-    <section class="bg-white shadow sm:rounded-lg p-6">
+    <section class="card p-6">
         <div class="flex items-center gap-3">
             <h3 class="text-lg font-medium text-gray-900">Work history</h3>
             @if (session('saved-work'))
@@ -173,7 +173,7 @@
                         </div>
                         <div class="sm:col-span-2">
                             <x-input-label value="Description" />
-                            <textarea wire:model="workRows.{{ $id }}.description" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                            <textarea wire:model="workRows.{{ $id }}.description" rows="2" class="mt-1 form-control"></textarea>
                         </div>
                     </div>
                     <div class="mt-3 flex gap-3">
@@ -185,7 +185,7 @@
         </div>
 
         <details class="mt-4">
-            <summary class="cursor-pointer text-sm font-medium text-indigo-600">+ Add a role</summary>
+            <summary class="cursor-pointer text-sm font-medium text-brand-600">+ Add a role</summary>
             <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                     <x-input-label value="Job title" />
@@ -210,7 +210,7 @@
                 </div>
                 <div class="sm:col-span-2">
                     <x-input-label value="Description" />
-                    <textarea wire:model="newWork.description" rows="2" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm"></textarea>
+                    <textarea wire:model="newWork.description" rows="2" class="mt-1 form-control"></textarea>
                 </div>
                 <div class="sm:col-span-2">
                     <x-primary-button type="button" wire:click="addWorkHistory">Add role</x-primary-button>
@@ -220,7 +220,7 @@
     </section>
 
     {{-- ── Education ───────────────────────────────────────────────── --}}
-    <section class="bg-white shadow sm:rounded-lg p-6">
+    <section class="card p-6">
         <div class="flex items-center gap-3">
             <h3 class="text-lg font-medium text-gray-900">Education</h3>
             @if (session('saved-education'))
@@ -239,7 +239,7 @@
                         </div>
                         <div>
                             <x-input-label value="Qualification" />
-                            <select wire:model="educationRows.{{ $id }}.qualification_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                            <select wire:model="educationRows.{{ $id }}.qualification_type" class="mt-1 form-control">
                                 <option value="">— Select —</option>
                                 @foreach ($qualificationTypes as $type)
                                     <option value="{{ $type->value }}">{{ $type->label() }}</option>
@@ -264,7 +264,7 @@
         </div>
 
         <details class="mt-4">
-            <summary class="cursor-pointer text-sm font-medium text-indigo-600">+ Add education</summary>
+            <summary class="cursor-pointer text-sm font-medium text-brand-600">+ Add education</summary>
             <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <div>
                     <x-input-label value="Institution" />
@@ -273,7 +273,7 @@
                 </div>
                 <div>
                     <x-input-label value="Qualification" />
-                    <select wire:model="newEducation.qualification_type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm">
+                    <select wire:model="newEducation.qualification_type" class="mt-1 form-control">
                         <option value="">— Select —</option>
                         @foreach ($qualificationTypes as $type)
                             <option value="{{ $type->value }}">{{ $type->label() }}</option>
@@ -297,7 +297,7 @@
     </section>
 
     {{-- ── Certifications ──────────────────────────────────────────── --}}
-    <section class="bg-white shadow sm:rounded-lg p-6">
+    <section class="card p-6">
         <div class="flex items-center gap-3">
             <h3 class="text-lg font-medium text-gray-900">Certifications</h3>
             @if (session('saved-certification'))
@@ -332,7 +332,7 @@
         </div>
 
         <details class="mt-4">
-            <summary class="cursor-pointer text-sm font-medium text-indigo-600">+ Add certification</summary>
+            <summary class="cursor-pointer text-sm font-medium text-brand-600">+ Add certification</summary>
             <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
                 <div>
                     <x-input-label value="Certification" />

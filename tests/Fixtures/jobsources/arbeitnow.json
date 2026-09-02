@@ -1,0 +1,53 @@
+{
+    "data": [
+        {
+            "slug": "performance-marketing-lead-100-remote-hamburg-346656",
+            "company_name": "ProviPanda GmbH",
+            "title": "Performance Marketing Lead (m/w/d) - 100% Remote",
+            "description": "<p><strong>Du willst keinen Job. Du willst eine Chance.</strong></p>\n<p>Wir suchen keinen Marketing-Mitarbeiter Nummer 47. Wir suchen einen Player, der schon bewiesen hat, dass er profitables Marketing im B2B-Bereich auf Scale bringt - hohe 5-6-stellige monatliche Budgets, klare Zahlen, echte Ergebnisse. Jetzt suchen wir jemanden, der das bei uns auf das nächste Level hebt.</p>\n<p>Wenn du das hier",
+            "remote": true,
+            "url": "https://www.arbeitnow.com/jobs/companies/provipanda-gmbh/performance-marketing-lead-100-remote-hamburg-346656",
+            "tags": [
+                "Remote",
+                "Marketing and Communication"
+            ],
+            "job_types": [],
+            "location": "Hamburg",
+            "created_at": 1788354032
+        },
+        {
+            "slug": "remote-senior-tracking-specialist-hamburg-149081",
+            "company_name": "celebrate company GmbH",
+            "title": "Senior Tracking Specialist (m/w/d)",
+            "description": "<h2 style=\"text-align:start;\"><strong>Wir verwandeln bedeutende Momente in wunderschöne Erinnerungen. </strong></h2><p>celebrate ist eine Markengruppe mit der Mission in ganz Europa schöne Momente in bleibende Erinnerungen zu verwandeln: mit hochwertigen Papierwaren, Fotoprodukten und besonderen Geschenkartikeln.</p><p>Wir suchen eine:n <strong>Senior Tracking Specialist (m/w/d)</strong>, die/der ",
+            "remote": true,
+            "url": "https://www.arbeitnow.com/jobs/companies/celebrate-company-gmbh/remote-senior-tracking-specialist-hamburg-149081",
+            "tags": [
+                "Data Analytics",
+                "Remote"
+            ],
+            "job_types": [
+                "Experienced",
+                "fulltime permanent"
+            ],
+            "location": "Homeoffice",
+            "created_at": 1788348621
+        }
+    ],
+    "links": {
+        "first": "https://www.arbeitnow.com/api/job-board-api?page=1",
+        "last": null,
+        "prev": null,
+        "next": null
+    },
+    "meta": {
+        "current_page": 1,
+        "current_page_url": "https://www.arbeitnow.com/api/job-board-api?page=1",
+        "from": 1,
+        "path": "https://www.arbeitnow.com/api/job-board-api",
+        "per_page": 175,
+        "to": 175,
+        "terms": "This is a free public API for jobs, please do not abuse. I would appreciate linking back to the site. By using the API, you agree to the terms of service present on Arbeitnow.com",
+        "info": "Jobs are updated every hour and order by the `created_at` timestamp. Use `?page=` to paginate. Read more information here: https://www.arbeitnow.com/blog/job-board-api"
+    }
+}
