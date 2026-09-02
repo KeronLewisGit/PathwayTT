@@ -55,4 +55,10 @@ class SettingsService
 
         return is_array($override) ? array_merge($defaults, $override) : $defaults;
     }
+
+    /** Best-match score below which the UI pivots to advisory mode. */
+    public function advisoryThreshold(): int
+    {
+        return (int) $this->get('matching.advisory_threshold', default: 55);
+    }
 }

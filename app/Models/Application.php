@@ -6,7 +6,12 @@ use App\Enums\ApplicationStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use InvalidArgumentException;
 
+/**
+ * Tracked job (saved → applied → interviewing → offer / rejected).
+ * Applying itself happens on the employer's site; this is the user's log.
+ */
 class Application extends Model
 {
     use HasFactory;
@@ -31,5 +36,25 @@ class Application extends Model
     public function jobListing(): BelongsTo
     {
         return $this->belongsTo(JobListing::class);
+    }
+
+    /**
+     * Move along the pipeline. Only the forward transitions defined on
+     * ApplicationStatus are allowed; applied_at is stamped once.
+     *
+     * @throws InvalidArgumentException on an illegal transition
+     */
+    public function transitionTo(ApplicationStatus $status): void
+    {
+        if (! in_array($status, $this->status->nextStatuses(), true)) {
+            throw new InvalidArgumentException(
+                "Cannot move from {$this->status->label()} to {$status->label()}."
+            );
+        }
+
+        $this->forceFill([
+            'status' => $status,
+            'applied_at' => $status === ApplicationStatus::Applied ? now() : $this->applied_at,
+        ])->save();
     }
 }

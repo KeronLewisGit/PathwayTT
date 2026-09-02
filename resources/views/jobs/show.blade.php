@@ -20,6 +20,56 @@
                 </div>
             @endunless
 
+            {{-- Your match --}}
+            <div class="bg-white shadow sm:rounded-lg p-6">
+                <div class="flex flex-wrap items-center justify-between gap-4">
+                    <h3 class="text-lg font-medium text-gray-900">Your match</h3>
+                    @if ($match && $match->is_eligible)
+                        @php $tone = $match->score >= 75 ? 'bg-green-100 text-green-800' : ($match->score >= 55 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'); @endphp
+                        <span class="inline-flex h-12 w-12 items-center justify-center rounded-full text-base font-bold {{ $tone }}">{{ $match->score }}</span>
+                    @endif
+                </div>
+
+                @if ($match === null)
+                    <p class="mt-2 text-sm text-gray-600">
+                        Not scored yet.
+                        <a href="{{ route('matches.index') }}" class="text-indigo-600 hover:text-indigo-500">Open your matches</a>
+                        to compute scores for every open listing.
+                    </p>
+                @elseif (! $match->is_eligible)
+                    <p class="mt-2 text-sm text-red-800">Not eligible: {{ $match->ineligibility_reason }}.</p>
+                @else
+                    <p class="mt-2 text-sm text-gray-700">{{ $match->score_breakdown['summary'] ?? '' }}</p>
+
+                    @php $missing = collect($match->missing_skills ?? []); @endphp
+                    @if ($missing->isNotEmpty() || ! empty($match->score_breakdown['gaps']))
+                        <p class="mt-3 text-sm font-medium text-gray-800">What you're missing</p>
+                        <ul class="mt-1 space-y-0.5 text-sm text-gray-700">
+                            @foreach ($missing as $skill)
+                                <li>
+                                    <span class="inline-block rounded px-1.5 text-xs font-medium {{ $skill['required'] ? 'bg-red-50 text-red-800' : 'bg-gray-100 text-gray-600' }}">{{ $skill['required'] ? 'required' : 'nice to have' }}</span>
+                                    {{ $skill['name'] }}
+                                </li>
+                            @endforeach
+                            @foreach ($match->score_breakdown['gaps'] ?? [] as $gap)
+                                <li>{{ $gap }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+
+                    <details class="mt-3">
+                        <summary class="cursor-pointer text-sm text-indigo-600 hover:text-indigo-500">Why this score?</summary>
+                        <div class="mt-2 rounded-md border border-gray-200 bg-gray-50 p-3">
+                            <x-match-breakdown :match="$match" />
+                        </div>
+                    </details>
+                @endif
+
+                <div class="mt-4">
+                    @livewire(App\Livewire\JobTrackButton::class, ['jobListingId' => $job->id], key('track-'.$job->id))
+                </div>
+            </div>
+
             <div class="bg-white shadow sm:rounded-lg p-6">
                 <p class="text-sm text-gray-600">
                     {{ $job->company_name ?: 'Company not stated' }}

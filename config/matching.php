@@ -5,9 +5,10 @@
 | Match scoring configuration
 |--------------------------------------------------------------------------
 | These are the DEFAULTS. Admin-edited overrides live in the `settings`
-| table and win over these values at runtime (see SettingsService).
-| Weights must sum to 100; MatchScoringService normalizes defensively
-| if an admin override breaks that invariant.
+| table and win over these values at runtime (see SettingsService and the
+| Filament "Matching & FX" page). Weights must sum to 100; the scorer
+| normalizes over the applicable components so a broken override still
+| yields a 0–100 score.
 */
 
 return [
@@ -27,11 +28,34 @@ return [
     'advisory_threshold' => 55,
 
     // Missing required skills cap the total score so a user never sees a
-    // high match for a job they cannot do.
+    // high match for a job they cannot do. [missing count => cap]; the
+    // largest threshold <= the missing count applies.
     'required_skill_caps' => [
         1 => 80, // missing exactly 1 required skill -> score capped at 80
         2 => 60, // missing 2 or more               -> score capped at 60
     ],
+
+    // Years of experience implied by a seniority label when a listing does
+    // not state min_years_experience explicitly.
+    'seniority_years' => [
+        'entry' => 0,
+        'mid' => 2,
+        'senior' => 5,
+        'manager' => 7,
+    ],
+
+    // Timezone feasibility for remote roles from AST (UTC-4):
+    // [max required overlap hours => component score]. Overlap up to a
+    // normal working day is easy; beyond ~8h means night shifts.
+    'overlap_feasibility' => [
+        6 => 100,
+        8 => 70,
+        24 => 40,
+    ],
+
+    // Geo component score for remote roles that don't state whether they
+    // hire from the Caribbean (eligible, but the user should check).
+    'unclear_geo_score' => 70,
 
     // Recompute batching (1k-10k users: chunk match recomputes in queue jobs).
     'recompute_chunk_size' => 100,

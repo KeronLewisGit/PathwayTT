@@ -5,6 +5,7 @@ namespace App\Jobs;
 use App\DTOs\StructuredResume;
 use App\Enums\EvidenceSource;
 use App\Enums\ParseStatus;
+use App\Jobs\RecomputeUserMatchesJob;
 use App\Models\Profile;
 use App\Models\Resume;
 use App\Services\Resume\ResumeStructurerInterface;
@@ -41,6 +42,9 @@ class ParseResumeJob implements ShouldQueue
             'parse_error' => null,
             'parsed_at' => now(),
         ]);
+
+        // The profile changed → rank every open listing for this user.
+        RecomputeUserMatchesJob::dispatch($this->resume->user_id);
     }
 
     public function failed(?Throwable $exception): void

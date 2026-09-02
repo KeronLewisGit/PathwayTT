@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\EmploymentType;
 use App\Enums\GeoEligibility;
+use App\Enums\QualificationType;
 use App\Enums\WorkArrangement;
 use App\Filament\Resources\JobListingResource\Pages;
 use App\Models\JobListing;
@@ -49,6 +50,19 @@ class JobListingResource extends Resource
                     ->label('Open to Caribbean applicants'),
                 Forms\Components\TextInput::make('required_overlap_hours')->numeric()->minValue(0)->maxValue(12)
                     ->helperText('Hours of overlap with employer timezone'),
+            ]),
+
+            Forms\Components\Section::make('Requirements (used by matching)')->columns(4)->schema([
+                Forms\Components\TextInput::make('min_years_experience')->label('Min years experience')
+                    ->numeric()->minValue(0)->maxValue(60)
+                    ->helperText('Blank = estimated from seniority'),
+                Forms\Components\Select::make('min_education_level')->label('Min qualification')
+                    ->options(collect(QualificationType::cases())->mapWithKeys(fn ($c) => [$c->value => $c->label()])),
+                Forms\Components\Toggle::make('requires_work_permit')->inline(false)
+                    ->label('Requires right to work in employer country')
+                    ->helperText('Hard filter for non-T&T employers'),
+                Forms\Components\CheckboxList::make('required_credentials')->label('Required local credentials')
+                    ->options(JobListing::CREDENTIALS),
             ]),
 
             Forms\Components\Section::make('Salary')->columns(4)->schema([

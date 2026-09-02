@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\EmploymentType;
 use App\Enums\GeoEligibility;
+use App\Enums\QualificationType;
 use App\Enums\WorkArrangement;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -24,11 +25,21 @@ class JobListing extends Model
         'manager' => 'Manager',
     ];
 
+    /** Local credentials a listing can insist on (profile has_* flags). */
+    public const CREDENTIALS = [
+        'nis' => 'NIS number',
+        'bir' => 'BIR file number',
+        'drivers_permit' => "Driver's permit",
+        'police_certificate' => 'Police certificate of character',
+    ];
+
     protected $fillable = [
         'source', 'source_job_id', 'title', 'company_name', 'company_id',
         'industry_id', 'work_arrangement', 'employment_type', 'location_text',
         'country', 'is_open_to_caribbean', 'geo_eligibility',
-        'required_overlap_hours', 'seniority', 'salary_min_cents',
+        'required_overlap_hours', 'seniority', 'min_years_experience',
+        'min_education_level', 'requires_work_permit', 'required_credentials',
+        'salary_min_cents',
         'salary_max_cents', 'salary_currency', 'salary_period', 'description',
         'requirements', 'posted_at', 'closes_at', 'apply_url', 'raw_payload',
         'is_active',
@@ -42,6 +53,10 @@ class JobListing extends Model
             'geo_eligibility' => GeoEligibility::class,
             'is_open_to_caribbean' => 'boolean',
             'required_overlap_hours' => 'integer',
+            'min_years_experience' => 'integer',
+            'min_education_level' => QualificationType::class,
+            'requires_work_permit' => 'boolean',
+            'required_credentials' => 'array',
             'salary_min_cents' => 'integer',
             'salary_max_cents' => 'integer',
             'requirements' => 'array',
@@ -115,6 +130,26 @@ class JobListing extends Model
                         ->where(fn (Builder $r) => $r->whereNull('is_open_to_caribbean')->orWhere('is_open_to_caribbean', true));
                 });
         });
+    }
+
+    /**
+     * Years of experience the role expects: explicit min_years_experience,
+     * else an estimate from the seniority label (config/matching.php),
+     * else null (the experience factor is then not applicable).
+     */
+    public function requiredYears(): ?int
+    {
+        if ($this->min_years_experience !== null) {
+            return $this->min_years_experience;
+        }
+
+        if ($this->seniority === null) {
+            return null;
+        }
+
+        $years = config('matching.seniority_years')[$this->seniority] ?? null;
+
+        return $years === null ? null : (int) $years;
     }
 
     public function isOpen(): bool

@@ -21,7 +21,9 @@ class CsvImportSource implements JobSourceInterface
     public const COLUMNS = [
         'source_job_id', 'title', 'company', 'industry_slug', 'work_arrangement',
         'employment_type', 'location', 'country', 'geo_eligibility',
-        'required_overlap_hours', 'seniority', 'salary_min', 'salary_max',
+        'required_overlap_hours', 'seniority', 'min_years_experience',
+        'min_education_level', 'requires_work_permit', 'required_credentials',
+        'salary_min', 'salary_max',
         'salary_currency', 'salary_period', 'description', 'requirements',
         'required_skills', 'preferred_skills', 'posted_at', 'closes_at', 'apply_url',
     ];
@@ -113,6 +115,10 @@ class CsvImportSource implements JobSourceInterface
                 geoEligibility: $row['geo_eligibility'] ?: null,
                 requiredOverlapHours: $row['required_overlap_hours'] !== '' ? (int) $row['required_overlap_hours'] : null,
                 seniority: $row['seniority'] ?: null,
+                minYearsExperience: ($row['min_years_experience'] ?? '') !== '' ? (int) $row['min_years_experience'] : null,
+                minEducationLevel: ($row['min_education_level'] ?? '') !== '' ? strtolower($row['min_education_level']) : null,
+                requiresWorkPermit: self::toBool($row['requires_work_permit'] ?? ''),
+                requiredCredentials: self::splitList($row['required_credentials'] ?? ''),
                 salaryMinCents: self::moneyToCents($row['salary_min'] ?? ''),
                 salaryMaxCents: self::moneyToCents($row['salary_max'] ?? ''),
                 salaryCurrency: $row['salary_currency'] !== '' ? strtoupper($row['salary_currency']) : null,
@@ -135,6 +141,16 @@ class CsvImportSource implements JobSourceInterface
     public static function moneyToCents(string $value): ?int
     {
         return Money::toCents($value);
+    }
+
+    /** "yes"/"true"/"1" → true, "no"/"false"/"0" → false, blank → null (unknown). */
+    private static function toBool(string $value): ?bool
+    {
+        return match (strtolower(trim($value))) {
+            '1', 'true', 'yes', 'y' => true,
+            '0', 'false', 'no', 'n' => false,
+            default => null,
+        };
     }
 
     /** Pipe-separated list → trimmed array. */

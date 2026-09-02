@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -34,5 +35,21 @@ class JobMatch extends Model
     public function jobListing(): BelongsTo
     {
         return $this->belongsTo(JobListing::class);
+    }
+
+    public function scopeEligible(Builder $query): Builder
+    {
+        return $query->where('is_eligible', true);
+    }
+
+    public function scopeIneligible(Builder $query): Builder
+    {
+        return $query->where('is_eligible', false);
+    }
+
+    /** @return list<array{id:int,name:string,slug:string,required:bool}> */
+    public function missingRequiredSkills(): array
+    {
+        return array_values(array_filter($this->missing_skills ?? [], fn (array $s) => $s['required'] ?? false));
     }
 }

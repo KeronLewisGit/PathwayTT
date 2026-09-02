@@ -31,6 +31,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Job listings — browse/filter, then link out to the original posting
     Route::view('/jobs', 'jobs.index')->name('jobs.index');
     Route::get('/jobs/{jobListing}', [JobListingController::class, 'show'])->name('jobs.show');
+
+    // Ranked matches with score breakdowns
+    Route::view('/matches', 'matches.index')->name('matches.index');
+
+    // Saved / applied jobs tracker
+    Route::view('/applications', 'applications.index')->name('applications.index');
 });
 
 Route::middleware('auth')->group(function () {

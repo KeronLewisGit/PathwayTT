@@ -27,6 +27,13 @@ class JobDto
         public ?string $geoEligibility = null,
         public ?int $requiredOverlapHours = null,
         public ?string $seniority = null,
+        /** Structured requirements used by matching (all optional). */
+        public ?int $minYearsExperience = null,
+        /** App\Enums\QualificationType value or null. */
+        public ?string $minEducationLevel = null,
+        public ?bool $requiresWorkPermit = null,
+        /** @var list<string> nis|bir|drivers_permit|police_certificate */
+        public array $requiredCredentials = [],
         public ?int $salaryMinCents = null,
         public ?int $salaryMaxCents = null,
         public ?string $salaryCurrency = null,

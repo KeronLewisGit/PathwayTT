@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\EvidenceSource;
 use App\Enums\QualificationType;
+use App\Jobs\RecomputeUserMatchesJob;
 use App\Models\Profile;
 use App\Models\Skill;
 use Illuminate\Support\Collection;
@@ -157,6 +158,7 @@ class ProfileReview extends Component
             'availability_date' => $this->availability_date ?: null,
         ]);
 
+        $this->queueRecompute();
         session()->flash('saved-profile', 'Profile saved.');
     }
 
@@ -193,6 +195,7 @@ class ProfileReview extends Component
         ]);
 
         $this->skillSearch = '';
+        $this->queueRecompute();
     }
 
     public function updateSkillProficiency(int $skillId, int $proficiency): void
@@ -201,11 +204,13 @@ class ProfileReview extends Component
             'proficiency' => max(1, min(5, $proficiency)),
             'is_user_edited' => true,
         ]);
+        $this->queueRecompute();
     }
 
     public function removeSkill(int $skillId): void
     {
         $this->profile()->skills()->detach($skillId);
+        $this->queueRecompute();
     }
 
     // ── Work history ────────────────────────────────────────────────
@@ -231,6 +236,7 @@ class ProfileReview extends Component
             'is_user_edited' => true,
         ]);
 
+        $this->queueRecompute();
         session()->flash('saved-work', 'Work history saved.');
     }
 
@@ -250,12 +256,14 @@ class ProfileReview extends Component
 
         $this->resetNewRows();
         $this->hydrateRows();
+        $this->queueRecompute();
     }
 
     public function deleteWorkHistory(int $id): void
     {
         $this->profile()->workHistories()->findOrFail($id)->delete();
         $this->hydrateRows();
+        $this->queueRecompute();
     }
 
     // ── Education ───────────────────────────────────────────────────
@@ -278,6 +286,7 @@ class ProfileReview extends Component
             'is_user_edited' => true,
         ]);
 
+        $this->queueRecompute();
         session()->flash('saved-education', 'Education saved.');
     }
 
@@ -296,12 +305,14 @@ class ProfileReview extends Component
 
         $this->resetNewRows();
         $this->hydrateRows();
+        $this->queueRecompute();
     }
 
     public function deleteEducation(int $id): void
     {
         $this->profile()->educations()->findOrFail($id)->delete();
         $this->hydrateRows();
+        $this->queueRecompute();
     }
 
     // ── Certifications ──────────────────────────────────────────────
@@ -322,6 +333,7 @@ class ProfileReview extends Component
             'is_user_edited' => true,
         ]);
 
+        $this->queueRecompute();
         session()->flash('saved-certification', 'Certification saved.');
     }
 
@@ -339,12 +351,24 @@ class ProfileReview extends Component
 
         $this->resetNewRows();
         $this->hydrateRows();
+        $this->queueRecompute();
     }
 
     public function deleteCertification(int $id): void
     {
         $this->profile()->certifications()->findOrFail($id)->delete();
         $this->hydrateRows();
+        $this->queueRecompute();
+    }
+
+    /**
+     * Every profile edit re-ranks the user's matches in the background.
+     * RecomputeUserMatchesJob is ShouldBeUnique, so a burst of edits
+     * collapses into one queued run.
+     */
+    private function queueRecompute(): void
+    {
+        RecomputeUserMatchesJob::dispatch((int) Auth::id());
     }
 
     public function render()

@@ -1,0 +1,95 @@
+<div class="space-y-6">
+    {{-- Status tabs --}}
+    <div class="bg-white shadow sm:rounded-lg p-3 flex flex-wrap items-center gap-2 text-sm">
+        <button type="button" wire:click="$set('status', '')"
+                class="rounded-full px-3 py-1 {{ $status === '' ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+            All ({{ $counts->sum() }})
+        </button>
+        @foreach ($statuses as $option)
+            <button type="button" wire:click="$set('status', '{{ $option->value }}')"
+                    class="rounded-full px-3 py-1 {{ $status === $option->value ? 'bg-gray-800 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200' }}">
+                {{ $option->label() }} ({{ $counts[$option->value] ?? 0 }})
+            </button>
+        @endforeach
+        <a href="{{ route('matches.index') }}" class="ml-auto text-indigo-600 hover:text-indigo-500">Find more matches →</a>
+    </div>
+
+    <div class="bg-white shadow sm:rounded-lg divide-y divide-gray-100">
+        @forelse ($applications as $application)
+            @php
+                $job = $application->jobListing;
+                $tone = match ($application->status) {
+                    App\Enums\ApplicationStatus::Offer => 'bg-green-100 text-green-800',
+                    App\Enums\ApplicationStatus::Rejected => 'bg-red-100 text-red-800',
+                    App\Enums\ApplicationStatus::Interviewing => 'bg-blue-100 text-blue-800',
+                    App\Enums\ApplicationStatus::Applied => 'bg-amber-100 text-amber-800',
+                    default => 'bg-gray-100 text-gray-700',
+                };
+            @endphp
+
+            <article class="p-4 sm:p-5 space-y-3">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                    <div class="min-w-0">
+                        <h3 class="text-base font-semibold text-gray-900">
+                            <a href="{{ route('jobs.show', $job) }}" class="hover:underline">{{ $job->title }}</a>
+                        </h3>
+                        <p class="text-sm text-gray-600">
+                            {{ $job->company_name ?: 'Company not stated' }}
+                            @if ($job->location_text) · {{ $job->location_text }} @endif
+                        </p>
+                        <x-job-badges :job="$job" class="mt-2" />
+                    </div>
+
+                    <div class="shrink-0 flex flex-col items-start gap-1 sm:items-end text-xs text-gray-500">
+                        <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium {{ $tone }}">{{ $application->status->label() }}</span>
+                        @if ($application->applied_at)
+                            <span>Applied {{ $application->applied_at->timezone(config('app.display_timezone'))->format('d M Y') }}</span>
+                        @endif
+                        <span>Updated {{ $application->updated_at->diffForHumans() }}</span>
+                        @if ($job->apply_url)
+                            <a href="{{ $job->apply_url }}" target="_blank" rel="noopener noreferrer nofollow" class="text-indigo-600 hover:text-indigo-500">Open posting ↗</a>
+                        @endif
+                    </div>
+                </div>
+
+                <div class="flex flex-wrap items-center gap-3 text-sm">
+                    @foreach ($application->status->nextStatuses() as $next)
+                        <button type="button" wire:click="setStatus({{ $application->id }}, '{{ $next->value }}')"
+                                class="rounded-md border border-gray-300 bg-white px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                            Mark {{ strtolower($next->label()) }}
+                        </button>
+                    @endforeach
+                    @if ($application->status->nextStatuses() === [])
+                        <span class="text-xs text-gray-500">Final status</span>
+                    @endif
+                    <button type="button" wire:click="remove({{ $application->id }})" wire:confirm="Remove this job from your tracker?"
+                            class="text-xs text-gray-500 hover:text-red-600">Remove</button>
+
+                    @error("status.{$application->id}")
+                        <span class="text-xs text-red-600">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                <div>
+                    <label for="notes-{{ $application->id }}" class="text-xs font-medium text-gray-600">Notes</label>
+                    <textarea id="notes-{{ $application->id }}" rows="2"
+                              wire:model="notes.{{ $application->id }}"
+                              wire:blur="saveNotes({{ $application->id }})"
+                              placeholder="Contact name, interview date, what to prepare…"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm text-sm"></textarea>
+                    @error("notes.{$application->id}")
+                        <p class="text-xs text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if (session("notes-saved-{$application->id}"))
+                        <p class="text-xs text-green-600">{{ session("notes-saved-{$application->id}") }}</p>
+                    @endif
+                </div>
+            </article>
+        @empty
+            <div class="p-8 text-center text-sm text-gray-500">
+                <p class="font-medium text-gray-900">Nothing tracked yet.</p>
+                <p class="mt-1">Save a job from <a href="{{ route('matches.index') }}" class="text-indigo-600 hover:text-indigo-500">your matches</a> or the <a href="{{ route('jobs.index') }}" class="text-indigo-600 hover:text-indigo-500">job list</a> to track it here.</p>
+            </div>
+        @endforelse
+    </div>
+</div>

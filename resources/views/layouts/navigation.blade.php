@@ -24,8 +24,14 @@
                     <x-nav-link :href="route('preferences.index')" :active="request()->routeIs('preferences.index')">
                         {{ __('Preferences') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('matches.index')" :active="request()->routeIs('matches.*')">
+                        {{ __('Matches') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
                         {{ __('Jobs') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('applications.index')" :active="request()->routeIs('applications.*')">
+                        {{ __('Applications') }}
                     </x-nav-link>
                 </div>
             </div>
@@ -91,8 +97,14 @@
             <x-responsive-nav-link :href="route('preferences.index')" :active="request()->routeIs('preferences.index')">
                 {{ __('Preferences') }}
             </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('matches.index')" :active="request()->routeIs('matches.*')">
+                {{ __('Matches') }}
+            </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
                 {{ __('Jobs') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('applications.index')" :active="request()->routeIs('applications.*')">
+                {{ __('Applications') }}
             </x-responsive-nav-link>
         </div>
 

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Jobs\RecomputeAllMatchesJob;
 use App\Models\JobSyncRun;
 use App\Services\JobSources\JobIngestor;
 use App\Services\JobSources\JobSourceInterface;
@@ -17,6 +18,7 @@ class JobSyncCommand extends Command
     public function handle(JobIngestor $ingestor): int
     {
         $exitCode = self::SUCCESS;
+        $changed = 0;
 
         foreach (config('jobsources.sources') as $class) {
             /** @var JobSourceInterface $source */
@@ -66,9 +68,16 @@ class JobSyncCommand extends Command
                 $this->error("[{$source->key()}] failed: {$e->getMessage()}");
                 $exitCode = self::FAILURE;
             }
+
+            $changed += $created + $updated;
         }
 
-        // Phase 4 wires queued match recomputation here (new jobs ingested).
+        // New or changed listings invalidate every user's ranking: fan out a
+        // queued recompute (one job per user with a profile).
+        if ($changed > 0) {
+            RecomputeAllMatchesJob::dispatch();
+            $this->line("Queued match recomputation for all users ({$changed} listings changed).");
+        }
 
         return $exitCode;
     }

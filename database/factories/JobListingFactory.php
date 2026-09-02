@@ -60,4 +60,19 @@ class JobListingFactory extends Factory
     {
         return $this->state(fn () => ['closes_at' => now()->subDay()]);
     }
+
+    /** No stated requirements: only the skills factor applies. */
+    public function bare(): static
+    {
+        return $this->state(fn () => [
+            'seniority' => null,
+            'min_years_experience' => null,
+            'min_education_level' => null,
+            'requires_work_permit' => null,
+            'required_credentials' => null,
+            'work_arrangement' => WorkArrangement::OnPremises,
+            'geo_eligibility' => GeoEligibility::Worldwide,
+            'country' => 'TT',
+        ]);
+    }
 }

@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\EmploymentType;
 use App\Enums\WorkArrangement;
+use App\Jobs\RecomputeUserMatchesJob;
 use App\Models\Industry;
 use App\Models\JobListing;
 use App\Support\Money;
@@ -111,7 +112,8 @@ class JobPreferences extends Component
             'availability_date' => $this->availability_date ?: null,
         ]);
 
-        // Phase 4: dispatch queued match recomputation for this user here.
+        // Preferences feed 20% of every score: re-rank in the background.
+        RecomputeUserMatchesJob::dispatch($user->id);
 
         session()->flash('preferences-saved', 'Preferences saved.');
     }

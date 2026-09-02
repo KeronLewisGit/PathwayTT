@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Matching\MatchScorerInterface;
+use App\Services\Matching\MatchScoringService;
 use App\Services\Resume\ResumeStructurerInterface;
 use App\Services\Resume\RuleBasedStructurer;
 use Illuminate\Support\Facades\Log;
@@ -25,6 +27,9 @@ class AppServiceProvider extends ServiceProvider
 
             return $this->app->make(RuleBasedStructurer::class);
         });
+
+        // Swappable scorer: tests or a future ML-backed scorer can rebind this.
+        $this->app->bind(MatchScorerInterface::class, MatchScoringService::class);
     }
 
     /**
