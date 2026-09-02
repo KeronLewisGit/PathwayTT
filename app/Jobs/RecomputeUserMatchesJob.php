@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\User;
+use App\Services\Engagement\AchievementService;
 use App\Services\Matching\MatchRecomputeService;
 use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -40,5 +41,8 @@ class RecomputeUserMatchesJob implements ShouldQueue, ShouldBeUnique
         }
 
         $recompute->recomputeForUser($user);
+
+        // Score-based milestones ("On the board") can only be reached here.
+        app(AchievementService::class)->evaluate($user);
     }
 }

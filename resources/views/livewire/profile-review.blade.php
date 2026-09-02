@@ -1,4 +1,6 @@
 <div class="space-y-8">
+    <x-profile-strength :strength="$strength" compact />
+
     {{-- ── Profile details ─────────────────────────────────────────── --}}
     <section class="card p-6">
         <h3 class="card-title">Your details</h3>

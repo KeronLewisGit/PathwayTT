@@ -5,18 +5,20 @@ namespace App\Http\Controllers;
 use App\Enums\ApplicationStatus;
 use App\Enums\ParseStatus;
 use App\Models\JobMatch;
+use App\Services\Engagement\AchievementService;
+use App\Services\Engagement\ProfileStrength;
 use App\Services\SettingsService;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 /**
- * Home screen: live status cards + the single most useful next step.
- * All numbers come from the user's own rows; nothing here is computed
- * on the fly beyond counts.
+ * Home screen: the single most useful next step, profile strength,
+ * live status cards, this week's goal, the score journey and milestones.
+ * All numbers come from the user's own rows.
  */
 class DashboardController extends Controller
 {
-    public function __invoke(Request $request, SettingsService $settings): View
+    public function __invoke(Request $request, SettingsService $settings, ProfileStrength $strength, AchievementService $achievements): View
     {
         $user = $request->user();
         $profile = $user->profile()->first();
@@ -34,17 +36,22 @@ class DashboardController extends Controller
             ->pluck('total', 'status');
 
         $plan = $user->skillGapPlans()->latest('generated_at')->latest('id')->first();
+        $firstPlan = $user->skillGapPlans()->oldest('generated_at')->oldest('id')->first();
         $skillIds = $profile ? $profile->skills()->pluck('skills.id')->map(fn ($id) => (int) $id)->all() : [];
         $planGaps = collect($plan?->payload['gaps'] ?? []);
         $planClosed = $planGaps->filter(fn (array $g) => in_array($g['skill']['id'], $skillIds, true))->count();
 
         $skillCount = count($skillIds);
-
         $steps = [
             'resume' => $resume !== null,
             'profile' => $profile !== null && $skillCount > 0,
             'preferences' => $preference !== null,
         ];
+
+        $board = $achievements->board($user);
+        $achievements->markSeen($user);
+
+        $journeyStart = (int) ($firstPlan?->payload['current']['best_score'] ?? 0);
 
         return view('dashboard', [
             'resume' => $resume,
@@ -53,6 +60,7 @@ class DashboardController extends Controller
             'skillCount' => $skillCount,
             'preference' => $preference,
             'steps' => $steps,
+            'strength' => $strength->for($user),
             'eligibleCount' => (clone $eligible)->count(),
             'aboveThreshold' => (clone $eligible)->where('score', '>=', $threshold)->count(),
             'best' => $best,
@@ -64,6 +72,9 @@ class DashboardController extends Controller
             'plan' => $plan,
             'planGapCount' => $planGaps->count(),
             'planClosed' => $planClosed,
+            'journey' => $firstPlan ? ['start' => $journeyStart, 'now' => $best, 'since' => $firstPlan->generated_at] : null,
+            'weekly' => $achievements->weeklyGoal($user),
+            'board' => $board,
             'nextStep' => $this->nextStep($steps, $best, $threshold, (clone $eligible)->count()),
         ]);
     }

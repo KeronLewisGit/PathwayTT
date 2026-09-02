@@ -3,7 +3,9 @@
 namespace App\Livewire;
 
 use App\Enums\ApplicationStatus;
+use App\Livewire\Concerns\AwardsAchievements;
 use App\Models\Application;
+use App\Services\Engagement\AchievementService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
@@ -15,6 +17,8 @@ use Livewire\Component;
  */
 class ApplicationTracker extends Component
 {
+    use AwardsAchievements;
+
     #[Url]
     public string $status = '';
 
@@ -35,6 +39,8 @@ class ApplicationTracker extends Component
 
         try {
             $application->transitionTo(ApplicationStatus::from($status));
+            $this->notify('Marked as '.strtolower($application->status->label()).'.', 'success');
+            $this->awardAchievements();
         } catch (InvalidArgumentException $e) {
             $this->addError("status.{$applicationId}", $e->getMessage());
         }
@@ -84,6 +90,7 @@ class ApplicationTracker extends Component
             'applications' => $applications,
             'counts' => $counts,
             'statuses' => ApplicationStatus::cases(),
+            'weekly' => app(AchievementService::class)->weeklyGoal($user),
         ]);
     }
 }

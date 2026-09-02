@@ -1,4 +1,37 @@
 <div class="space-y-6">
+    {{-- Pipeline + weekly goal --}}
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div class="card p-5 lg:col-span-2">
+            <p class="eyebrow">Your pipeline</p>
+            <ol class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-5">
+                @foreach ($statuses as $stage)
+                    @php $n = (int) ($counts[$stage->value] ?? 0); @endphp
+                    <li class="rounded-md border p-3 text-center {{ $n > 0 ? 'border-brand-200 bg-brand-50' : 'border-gray-200' }}">
+                        <p class="text-2xl font-semibold {{ $n > 0 ? 'text-brand-800' : 'text-gray-400' }}">{{ $n }}</p>
+                        <p class="text-xs text-gray-600">{{ $stage->label() }}</p>
+                    </li>
+                @endforeach
+            </ol>
+        </div>
+
+        <div class="card p-5">
+            <p class="eyebrow">This week's goal</p>
+            <p class="mt-1 text-2xl font-semibold text-gray-900">{{ $weekly['count'] }}<span class="text-base font-normal text-gray-400"> / {{ $weekly['goal'] }} applied</span></p>
+            <div class="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-100">
+                <div class="h-2 rounded-full {{ $weekly['met'] ? 'bg-green-500' : 'bg-brand-500' }}" style="width: {{ $weekly['progress'] }}%"></div>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">
+                @if ($weekly['met'])
+                    Goal met — momentum like this is what gets interviews.
+                @elseif ($weekly['count'] > 0)
+                    {{ $weekly['goal'] - $weekly['count'] }} more to hit this week's goal.
+                @else
+                    Aim for {{ $weekly['goal'] }} applications a week; small steady steps beat bursts.
+                @endif
+            </p>
+        </div>
+    </div>
+
     {{-- Status tabs --}}
     <div class="card p-3 flex flex-wrap items-center gap-2 text-sm">
         <button type="button" wire:click="$set('status', '')"

@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Enums\ApplicationStatus;
+use App\Livewire\Concerns\AwardsAchievements;
 use App\Models\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -16,14 +17,21 @@ use Livewire\Component;
  */
 class JobTrackButton extends Component
 {
+    use AwardsAchievements;
+
     public int $jobListingId;
 
     public function save(): void
     {
-        Application::query()->firstOrCreate(
+        $application = Application::query()->firstOrCreate(
             ['user_id' => Auth::id(), 'job_listing_id' => $this->jobListingId],
             ['status' => ApplicationStatus::Saved],
         );
+
+        if ($application->wasRecentlyCreated) {
+            $this->notify('Saved to your tracker.', 'success');
+        }
+        $this->awardAchievements();
     }
 
     public function setStatus(string $status): void
@@ -38,6 +46,8 @@ class JobTrackButton extends Component
 
         try {
             $application->transitionTo(ApplicationStatus::from($status));
+            $this->notify('Marked as '.strtolower($application->status->label()).'.', 'success');
+            $this->awardAchievements();
         } catch (InvalidArgumentException $e) {
             $this->addError('status', $e->getMessage());
         }

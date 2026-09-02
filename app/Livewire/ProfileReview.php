@@ -5,7 +5,9 @@ namespace App\Livewire;
 use App\Enums\EvidenceSource;
 use App\Enums\QualificationType;
 use App\Jobs\RecomputeUserMatchesJob;
+use App\Livewire\Concerns\AwardsAchievements;
 use App\Models\Profile;
+use App\Services\Engagement\ProfileStrength;
 use App\Models\Skill;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -18,6 +20,8 @@ use Livewire\Component;
  */
 class ProfileReview extends Component
 {
+    use AwardsAchievements;
+
     // ── Profile scalars ─────────────────────────────────────────────
     public string $full_name = '';
 
@@ -369,6 +373,7 @@ class ProfileReview extends Component
     private function queueRecompute(): void
     {
         RecomputeUserMatchesJob::dispatch((int) Auth::id());
+        $this->awardAchievements();
     }
 
     public function render()
@@ -376,6 +381,7 @@ class ProfileReview extends Component
         $profile = $this->profile()->load(['skills', 'workHistories', 'educations', 'certifications']);
 
         return view('livewire.profile-review', [
+            'strength' => app(ProfileStrength::class)->for(Auth::user()),
             'profile' => $profile,
             'qualificationTypes' => QualificationType::cases(),
         ]);

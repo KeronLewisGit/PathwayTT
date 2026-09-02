@@ -18,7 +18,8 @@ test('a new user is told to upload a resume first', function () {
     $this->actingAs(dashboardUser())->get('/dashboard')
         ->assertOk()
         ->assertSee('Upload your resume')
-        ->assertSee('Not uploaded yet')
+        ->assertSee('Profile strength')
+        ->assertSee('Getting started')
         ->assertSee('Not computed yet');
 });
 
@@ -42,7 +43,6 @@ test('the dashboard shows live match, application and plan figures', function ()
     $this->actingAs($user)->get('/dashboard')
         ->assertOk()
         ->assertSee('Apply to your top matches')
-        ->assertSee('1 skill on record')
         ->assertSee('1 of 2 eligible listings at or above 55')
         ->assertSee('1 tracked')
         ->assertSee('gaps closed');

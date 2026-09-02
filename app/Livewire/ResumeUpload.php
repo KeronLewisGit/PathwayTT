@@ -4,6 +4,7 @@ namespace App\Livewire;
 
 use App\Enums\ParseStatus;
 use App\Jobs\ParseResumeJob;
+use App\Livewire\Concerns\AwardsAchievements;
 use App\Models\Resume;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ use Livewire\WithFileUploads;
 
 class ResumeUpload extends Component
 {
+    use AwardsAchievements;
     use WithFileUploads;
 
     public ?TemporaryUploadedFile $file = null;
@@ -71,6 +73,7 @@ class ResumeUpload extends Component
 
         $this->reset('file');
         session()->flash('resume-uploaded', 'Resume uploaded — parsing has started.');
+        $this->awardAchievements();
     }
 
     public function delete(int $resumeId): void

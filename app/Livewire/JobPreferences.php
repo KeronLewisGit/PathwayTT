@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Enums\EmploymentType;
 use App\Enums\WorkArrangement;
 use App\Jobs\RecomputeUserMatchesJob;
+use App\Livewire\Concerns\AwardsAchievements;
 use App\Models\Industry;
 use App\Models\JobListing;
 use App\Support\Money;
@@ -21,6 +22,8 @@ use Livewire\Component;
  */
 class JobPreferences extends Component
 {
+    use AwardsAchievements;
+
     public ?int $industry_id = null;
 
     /** @var list<string> WorkArrangement values */
@@ -116,6 +119,7 @@ class JobPreferences extends Component
         RecomputeUserMatchesJob::dispatch($user->id);
 
         session()->flash('preferences-saved', 'Preferences saved.');
+        $this->awardAchievements();
     }
 
     public function getIndustriesProperty(): Collection
