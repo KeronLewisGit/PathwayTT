@@ -1,7 +1,7 @@
 <x-app-layout title="Dashboard">
     <x-slot name="header"><x-page-title title="Dashboard" /></x-slot>
 
-    <x-page width="wide">
+    <x-page>
             {{-- Next step --}}
             <div class="card p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>

@@ -6,7 +6,7 @@
         </div>
     </x-slot>
 
-    <x-page width="narrow">
+    <x-page>
             @if ($reason = $job->ineligibilityReason())
                 <div class="callout-danger">
                     <strong>Not eligible from Trinidad &amp; Tobago:</strong> {{ $reason }}.
