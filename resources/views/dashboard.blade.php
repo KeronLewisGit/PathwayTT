@@ -31,9 +31,9 @@
                     <p class="text-sm font-semibold text-gray-900">3. Preferences</p>
                     <p class="mt-1 text-xs text-gray-500">Industry, remote or local, salary floor.</p>
                 </a>
-                <a href="{{ route('jobs.index') }}" class="block bg-white shadow-sm sm:rounded-lg p-5 hover:shadow">
-                    <p class="text-sm font-semibold text-gray-900">Browse Jobs</p>
-                    <p class="mt-1 text-xs text-gray-500">Open listings, flagged for T&amp;T eligibility.</p>
+                <a href="{{ route('matches.index') }}" class="block bg-white shadow-sm sm:rounded-lg p-5 hover:shadow">
+                    <p class="text-sm font-semibold text-gray-900">My Matches</p>
+                    <p class="mt-1 text-xs text-gray-500">Ranked, scored, with what you're missing — or your Skills Gap Plan.</p>
                 </a>
             </div>
         </div>

@@ -58,4 +58,25 @@ final class CandidateProfile
     {
         return in_array($skillId, $this->skillIds, true);
     }
+
+    /** What-if copy of this candidate with one more skill (gap-plan projections). */
+    public function withSkill(int $skillId): self
+    {
+        if ($this->hasSkill($skillId)) {
+            return $this;
+        }
+
+        return new self(
+            userId: $this->userId,
+            hasProfile: $this->hasProfile,
+            skillIds: [...$this->skillIds, $skillId],
+            yearsExperience: $this->yearsExperience,
+            education: $this->education,
+            preferredIndustryId: $this->preferredIndustryId,
+            workArrangements: $this->workArrangements,
+            employmentTypes: $this->employmentTypes,
+            seniority: $this->seniority,
+            credentials: $this->credentials,
+        );
+    }
 }

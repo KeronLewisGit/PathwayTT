@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\Advisory\SkillGapAnalyzer;
+use App\Services\Advisory\SkillGapAnalyzerInterface;
 use App\Services\Matching\MatchScorerInterface;
 use App\Services\Matching\MatchScoringService;
 use App\Services\Resume\ResumeStructurerInterface;
@@ -30,6 +32,7 @@ class AppServiceProvider extends ServiceProvider
 
         // Swappable scorer: tests or a future ML-backed scorer can rebind this.
         $this->app->bind(MatchScorerInterface::class, MatchScoringService::class);
+        $this->app->bind(SkillGapAnalyzerInterface::class, SkillGapAnalyzer::class);
     }
 
     /**

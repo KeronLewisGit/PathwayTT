@@ -77,8 +77,11 @@
 
             <p class="mt-3">
                 Already have one of these? <a href="{{ route('profile.review') }}" class="underline font-medium">Add it to your profile</a> and recompute.
-                Your personalised Skills Gap Plan — local T&amp;T and online options ranked by impact — is coming in the next release.
             </p>
+            <a href="{{ route('plan.index') }}" class="mt-3 inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-500">
+                Open my Skills Gap Plan →
+            </a>
+            <p class="mt-2 text-xs text-indigo-800">Ranked by impact per week of effort, with local T&amp;T and online options and the exact listings each skill would unlock.</p>
         </div>
     @endif
 

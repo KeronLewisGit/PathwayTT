@@ -76,6 +76,96 @@ class LearningResourceSeeder extends Seeder
                 update: ['title', 'url', 'delivery_mode', 'credential_type', 'notes', 'provider_type'],
             );
         }
+
+        $this->attachSkills($now);
+    }
+
+    /**
+     * Which taxonomy skills each provider's GENERAL OFFERING AREA develops.
+     * This is the resource→skill map the Skills Gap Plan uses; it names no
+     * specific course, price or duration. Entries are skill categories
+     * and/or canonical skill names from SkillSeeder; unknown names are
+     * skipped, never invented. Weight 2 = specialist provider for that
+     * skill, 1 = generalist that offers it among many things.
+     *
+     * Requires SkillSeeder to have run first (DatabaseSeeder orders this).
+     */
+    private function attachSkills($now): void
+    {
+        $map = [
+            // ── Local T&T ──────────────────────────────────────────
+            'uwi-st-augustine' => [1, ['software-it', 'finance-accounting', 'professional-services', 'education', 'healthcare', 'agriculture', 'construction'], []],
+            'uwi-global-campus-formerly-open-campus' => [1, ['software-it', 'finance-accounting', 'professional-services', 'education', 'soft-skills'], []],
+            'costaatt' => [1, ['software-it', 'healthcare', 'finance-accounting', 'office-admin', 'hospitality-tourism', 'creative-media'], []],
+            'uwi-roytec' => [1, ['finance-accounting', 'professional-services', 'office-admin', 'sales-marketing'], ['Project Management', 'Data Analysis', 'IT Support']],
+            'sbcs-global-learning-institute' => [2, ['finance-accounting', 'software-it'], ['Project Management', 'Human Resources', 'Business Analysis']],
+            'mic-institute-of-technology-mic-it' => [2, ['trades-energy'], []],
+            'nesc-technical-institute' => [2, ['trades-energy'], ['AutoCAD', 'Blueprint Reading']],
+            'cipriani-college-of-labour-co-operative-studies' => [2, [], ['Occupational Health & Safety', 'Human Resources', 'Project Management', 'Training & Development', 'Recruitment', 'Conflict Resolution', 'Negotiation']],
+            'ytepp-limited' => [1, ['hospitality-tourism', 'office-admin', 'agriculture'], ['Welding', 'Carpentry', 'Plumbing', 'Masonry', 'Automotive Repair', 'HVAC', 'Caregiving', 'Data Entry', 'Customer Service']],
+            'nedco' => [1, [], ['Budgeting', 'Sales', 'Market Research', 'Brand Management', 'Digital Marketing']],
+            'acca-trinidad-tobago' => [2, ['finance-accounting'], []],
+            'cima' => [2, [], ['Financial Analysis', 'Budgeting', 'Financial Reporting', 'Risk Management', 'Treasury Management', 'Auditing']],
+            'cmi' => [1, [], ['Leadership', 'Management Consulting', 'Human Resources', 'Training & Development', 'Negotiation', 'Project Management']],
+            'pmi-southern-caribbean-chapter' => [2, [], ['Project Management', 'Agile Methodologies', 'Project Tracking Tools', 'Risk Management']],
+
+            // ── International / online ─────────────────────────────
+            'coursera' => [1, ['software-it', 'finance-accounting', 'sales-marketing', 'soft-skills', 'professional-services', 'remote-work', 'education'], ['Medical Billing & Coding', 'Supply Chain Management']],
+            'edx' => [1, ['software-it', 'finance-accounting', 'professional-services', 'soft-skills'], []],
+            'google-career-certificates' => [2, [], ['IT Support', 'Data Analysis', 'SQL', 'Project Management', 'Agile Methodologies', 'UI/UX Design', 'Cybersecurity', 'Digital Marketing', 'Email Marketing', 'Search Engine Optimization', 'Microsoft Excel']],
+            'aws-training-certification' => [2, [], ['Amazon Web Services', 'DevOps', 'Docker', 'Linux', 'Cybersecurity']],
+            'microsoft-learn-azure-certifications' => [2, [], ['Microsoft Azure', 'Microsoft 365 Administration', 'Active Directory', 'Power BI', '.NET', 'SQL', 'Data Analysis', 'IT Support']],
+            'google-cloud-certification' => [2, [], ['Google Cloud Platform', 'DevOps', 'Docker', 'Machine Learning', 'Data Analysis']],
+            'comptia' => [2, [], ['IT Support', 'Computer Networking', 'Cybersecurity', 'Linux', 'Active Directory']],
+            'salesforce-trailhead' => [2, [], ['Salesforce', 'CRM Software']],
+            'hubspot-academy' => [2, [], ['Digital Marketing', 'Email Marketing', 'CRM Software', 'Content Writing', 'Sales', 'Social Media Management', 'Search Engine Optimization']],
+            'meta-blueprint' => [2, [], ['Digital Marketing', 'Paid Advertising', 'Social Media Management', 'Brand Management']],
+            'freecodecamp' => [2, [], ['HTML', 'CSS', 'JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'Git', 'REST APIs', 'Data Analysis', 'Machine Learning', 'TypeScript']],
+            'scrimba' => [2, [], ['HTML', 'CSS', 'JavaScript', 'React', 'TypeScript', 'UI/UX Design', 'Git']],
+        ];
+
+        $resourceIds = DB::table('learning_resources')->pluck('id', 'slug');
+        $skills = DB::table('skills')->get(['id', 'name', 'category']);
+        $byName = $skills->keyBy(fn ($s) => mb_strtolower($s->name));
+        $byCategory = $skills->groupBy('category');
+
+        $rows = [];
+        foreach ($map as $slug => [$weight, $categories, $names]) {
+            $resourceId = $resourceIds[$slug] ?? null;
+            if ($resourceId === null) {
+                continue;
+            }
+
+            $skillIds = [];
+            foreach ($categories as $category) {
+                foreach ($byCategory[$category] ?? [] as $skill) {
+                    $skillIds[$skill->id] = true;
+                }
+            }
+            foreach ($names as $name) {
+                if ($skill = $byName[mb_strtolower($name)] ?? null) {
+                    $skillIds[$skill->id] = true;
+                }
+            }
+
+            foreach (array_keys($skillIds) as $skillId) {
+                $rows[] = [
+                    'learning_resource_id' => $resourceId,
+                    'skill_id' => $skillId,
+                    'impact_weight' => $weight,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+
+        foreach (array_chunk($rows, 200) as $chunk) {
+            DB::table('learning_resource_skill')->upsert(
+                $chunk,
+                uniqueBy: ['learning_resource_id', 'skill_id'],
+                update: ['impact_weight'],
+            );
+        }
     }
 
     private function row(

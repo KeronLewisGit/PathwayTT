@@ -37,6 +37,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Saved / applied jobs tracker
     Route::view('/applications', 'applications.index')->name('applications.index');
+
+    // Advisory mode: persisted Skills Gap Plan
+    Route::view('/plan', 'plan.index')->name('plan.index');
 });
 
 Route::middleware('auth')->group(function () {

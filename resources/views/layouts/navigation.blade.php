@@ -27,6 +27,9 @@
                     <x-nav-link :href="route('matches.index')" :active="request()->routeIs('matches.*')">
                         {{ __('Matches') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('plan.index')" :active="request()->routeIs('plan.*')">
+                        {{ __('Skills Plan') }}
+                    </x-nav-link>
                     <x-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
                         {{ __('Jobs') }}
                     </x-nav-link>
@@ -99,6 +102,9 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('matches.index')" :active="request()->routeIs('matches.*')">
                 {{ __('Matches') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('plan.index')" :active="request()->routeIs('plan.*')">
+                {{ __('Skills Plan') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
                 {{ __('Jobs') }}
