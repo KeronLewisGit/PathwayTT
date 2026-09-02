@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\JobListingController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResumeDownloadController;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/resumes/{resume}/download', ResumeDownloadController::class)
         ->middleware('signed')
         ->name('resumes.download');
+
+    // Job preferences (industry, arrangement, seniority, salary floor…)
+    Route::view('/preferences', 'preferences.index')->name('preferences.index');
+
+    // Job listings — browse/filter, then link out to the original posting
+    Route::view('/jobs', 'jobs.index')->name('jobs.index');
+    Route::get('/jobs/{jobListing}', [JobListingController::class, 'show'])->name('jobs.show');
 });
 
 Route::middleware('auth')->group(function () {

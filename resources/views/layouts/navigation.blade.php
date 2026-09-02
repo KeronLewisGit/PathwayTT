@@ -21,6 +21,12 @@
                     <x-nav-link :href="route('profile.review')" :active="request()->routeIs('profile.review')">
                         {{ __('My Profile') }}
                     </x-nav-link>
+                    <x-nav-link :href="route('preferences.index')" :active="request()->routeIs('preferences.index')">
+                        {{ __('Preferences') }}
+                    </x-nav-link>
+                    <x-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
+                        {{ __('Jobs') }}
+                    </x-nav-link>
                 </div>
             </div>
 
@@ -81,6 +87,12 @@
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('profile.review')" :active="request()->routeIs('profile.review')">
                 {{ __('My Profile') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('preferences.index')" :active="request()->routeIs('preferences.index')">
+                {{ __('Preferences') }}
+            </x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('jobs.index')" :active="request()->routeIs('jobs.*')">
+                {{ __('Jobs') }}
             </x-responsive-nav-link>
         </div>
 

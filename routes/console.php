@@ -29,3 +29,18 @@ if (config('queue.via_scheduler')) {
         '--backoff=10',
     ])->everyMinute()->withoutOverlapping();
 }
+
+/*
+|--------------------------------------------------------------------------
+| Job ingestion
+|--------------------------------------------------------------------------
+| Runs every enabled JobSourceInterface adapter (config/jobsources.php):
+| drains the CSV inbox now, remote APIs from Phase 6. Nightly at 03:00 AST
+| keeps remote-API traffic low; admins can also trigger it from the
+| Filament "Job sync" page at any time.
+*/
+Schedule::command('job:sync')
+    ->dailyAt('03:00')
+    ->timezone(config('app.display_timezone'))
+    ->withoutOverlapping()
+    ->onOneServer();

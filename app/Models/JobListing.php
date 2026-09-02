@@ -16,6 +16,14 @@ class JobListing extends Model
 {
     use HasFactory;
 
+    /** Seniority vocabulary shared by admin forms, preferences and matching. */
+    public const SENIORITIES = [
+        'entry' => 'Entry',
+        'mid' => 'Mid',
+        'senior' => 'Senior',
+        'manager' => 'Manager',
+    ];
+
     protected $fillable = [
         'source', 'source_job_id', 'title', 'company_name', 'company_id',
         'industry_id', 'work_arrangement', 'employment_type', 'location_text',
@@ -70,5 +78,65 @@ class JobListing extends Model
     {
         return $query->where('is_active', true)
             ->where(fn (Builder $q) => $q->whereNull('closes_at')->orWhere('closes_at', '>', now()));
+    }
+
+    /** Filter by title, company or location (simple LIKE search — fine at this scale). */
+    public function scopeSearch(Builder $query, ?string $term): Builder
+    {
+        $term = trim((string) $term);
+
+        if ($term === '') {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($term) {
+            $like = '%'.str_replace(['%', '_'], ['\%', '\_'], $term).'%';
+            $q->where('title', 'like', $like)
+                ->orWhere('company_name', 'like', $like)
+                ->orWhere('location_text', 'like', $like);
+        });
+    }
+
+    /**
+     * SQL twin of ineligibilityReason(): excludes listings a T&T resident
+     * cannot apply to. Keep the two in sync.
+     */
+    public function scopeEligibleFromTT(Builder $query): Builder
+    {
+        return $query->where(function (Builder $q) {
+            $q->whereNull('geo_eligibility')
+                ->orWhere('geo_eligibility', GeoEligibility::Worldwide->value)
+                ->orWhere(function (Builder $country) {
+                    $country->where('geo_eligibility', GeoEligibility::CountryRestricted->value)
+                        ->where(fn (Builder $c) => $c->whereNull('country')->orWhere('country', 'TT'));
+                })
+                ->orWhere(function (Builder $region) {
+                    $region->where('geo_eligibility', GeoEligibility::RegionRestricted->value)
+                        ->where(fn (Builder $r) => $r->whereNull('is_open_to_caribbean')->orWhere('is_open_to_caribbean', true));
+                });
+        });
+    }
+
+    public function isOpen(): bool
+    {
+        return $this->is_active && ($this->closes_at === null || $this->closes_at->isFuture());
+    }
+
+    /**
+     * Why a Trinidad & Tobago resident cannot apply, or null if eligible.
+     * This is a HARD filter (used by matching in Phase 4), not a low score:
+     * a US-only remote job must never be shown as eligible to a T&T user.
+     */
+    public function ineligibilityReason(): ?string
+    {
+        if ($this->geo_eligibility === GeoEligibility::CountryRestricted && $this->country !== null && $this->country !== 'TT') {
+            return "Restricted to applicants in {$this->country} — not open to Trinidad & Tobago residents";
+        }
+
+        if ($this->geo_eligibility === GeoEligibility::RegionRestricted && $this->is_open_to_caribbean === false) {
+            return 'Region-restricted and not open to Caribbean applicants';
+        }
+
+        return null;
     }
 }
