@@ -1,7 +1,7 @@
 <div @if ($this->isProcessing) wire:poll.5s @endif>
     {{-- Upload form --}}
     <div class="card p-6">
-        <h3 class="text-lg font-medium text-gray-900">Upload your resume</h3>
+        <h3 class="card-title">Upload your resume</h3>
 
         <p class="mt-2 text-sm text-gray-600">
             PDF or DOCX, up to 5&nbsp;MB. We'll extract your skills, work history and
@@ -36,7 +36,7 @@
         </form>
 
         @if (session('resume-uploaded'))
-            <p class="mt-3 text-sm font-medium text-green-600">{{ session('resume-uploaded') }}</p>
+            <x-flash :message="session('resume-uploaded')" />
         @endif
     </div>
 

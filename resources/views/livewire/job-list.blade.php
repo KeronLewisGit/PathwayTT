@@ -37,7 +37,7 @@
 
             <div class="flex items-center gap-4">
                 <span class="text-gray-500">{{ $jobs->total() }} {{ Str::plural('listing', $jobs->total()) }}</span>
-                <button type="button" wire:click="clearFilters" class="text-gray-600 hover:text-gray-900">Clear filters</button>
+                <button type="button" wire:click="clearFilters" class="btn-secondary btn-sm">Clear filters</button>
                 <a href="{{ route('preferences.index') }}" class="link">Edit preferences</a>
             </div>
         </div>

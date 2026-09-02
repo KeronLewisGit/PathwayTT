@@ -1,12 +1,7 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
-    </x-slot>
+<x-app-layout title="Dashboard">
+    <x-slot name="header"><x-page-title title="Dashboard" /></x-slot>
 
-    <div class="py-8 sm:py-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+    <x-page width="wide">
             {{-- Next step --}}
             <div class="card p-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
@@ -83,6 +78,5 @@
             <p class="text-xs text-gray-500">
                 Match scores recompute automatically when you edit your profile or preferences, and nightly as new listings arrive.
             </p>
-        </div>
-    </div>
+    </x-page>
 </x-app-layout>

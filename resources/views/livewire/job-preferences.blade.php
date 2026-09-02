@@ -1,5 +1,5 @@
 <div class="card p-6">
-    <h3 class="text-lg font-medium text-gray-900">What are you looking for?</h3>
+    <h3 class="card-title">What are you looking for?</h3>
     <p class="mt-1 text-sm text-gray-500">
         These preferences pre-filter the job list and drive your match scores.
         Leave anything blank to keep it open.
@@ -103,7 +103,7 @@
             <x-primary-button type="submit">Save preferences</x-primary-button>
 
             @if (session('preferences-saved'))
-                <span class="text-sm font-medium text-green-600">{{ session('preferences-saved') }}</span>
+                <x-flash :message="session('preferences-saved')" />
                 <a href="{{ route('jobs.index') }}" class="text-sm font-medium link">See jobs →</a>
             @endif
         </div>

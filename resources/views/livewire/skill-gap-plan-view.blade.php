@@ -27,7 +27,7 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <button type="button" wire:click="generate" @if ($generating) disabled @endif class="text-gray-600 hover:text-gray-900 disabled:opacity-50">Regenerate</button>
+            <button type="button" wire:click="generate" @if ($generating) disabled @endif class="btn-secondary btn-sm">Regenerate</button>
             <a href="{{ route('plan.pdf') }}" class="link">Download PDF</a>
             <a href="{{ route('matches.index') }}" class="link">Back to matches</a>
         </div>
@@ -120,25 +120,28 @@
                                     </div>
                                 </div>
 
-                                @php $hasResources = $item['resources']['local'] !== [] || $item['resources']['online'] !== []; @endphp
+                                @php
+                                    $hasResources = $item['resources']['local'] !== [] || $item['resources']['online'] !== [];
+                                    $extra = max(count($item['resources']['local']) - 1, 0) + max(count($item['resources']['online']) - 1, 0);
+                                @endphp
                                 <div class="mt-3 grid grid-cols-1 gap-4 lg:grid-cols-2">
-                                    <div>
-                                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Locally in Trinidad &amp; Tobago</p>
-                                        @forelse ($item['resources']['local'] as $resource)
-                                            <div class="mt-2"><x-learning-resource-card :resource="$resource" /></div>
-                                        @empty
-                                            <p class="mt-2 text-sm text-gray-500">No local provider catalogued for this skill yet.</p>
-                                        @endforelse
-                                    </div>
-                                    <div>
-                                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Online / international</p>
-                                        @forelse ($item['resources']['online'] as $resource)
-                                            <div class="mt-2"><x-learning-resource-card :resource="$resource" /></div>
-                                        @empty
-                                            <p class="mt-2 text-sm text-gray-500">No online provider catalogued for this skill yet.</p>
-                                        @endforelse
-                                    </div>
+                                    @foreach (['local' => 'Locally in Trinidad & Tobago', 'online' => 'Online / international'] as $track => $heading)
+                                        <div>
+                                            <p class="eyebrow">{{ $heading }}</p>
+                                            @forelse ($item['resources'][$track] as $i => $resource)
+                                                <div class="mt-2" @if ($i > 0) x-show="open" x-cloak @endif>
+                                                    <x-learning-resource-card :resource="$resource" />
+                                                </div>
+                                            @empty
+                                                <p class="mt-2 text-sm text-gray-500">No {{ $track }} provider catalogued for this skill yet.</p>
+                                            @endforelse
+                                        </div>
+                                    @endforeach
                                 </div>
+
+                                @if ($extra > 0)
+                                    <button type="button" @click="open = !open" class="mt-2 text-sm link" x-text="open ? 'Show fewer providers' : 'Show {{ $extra }} more {{ Str::plural('provider', $extra) }}'"></button>
+                                @endif
 
                                 @unless ($hasResources)
                                     <p class="mt-2 text-xs text-gray-500">Effort shown is a default estimate because nothing is catalogued for this skill yet.</p>

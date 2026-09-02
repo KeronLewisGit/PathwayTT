@@ -35,6 +35,14 @@ return [
         2 => 60, // missing 2 or more               -> score capped at 60
     ],
 
+    // Confidence caps: when there is no skills evidence on one side, the
+    // renormalised score would otherwise rest on location/arrangement alone
+    // and read as a "100% match". Null disables a cap.
+    'confidence_caps' => [
+        'listing_without_skills' => 60,   // listing states no skills we recognise
+        'candidate_without_skills' => 40, // profile has no skills yet
+    ],
+
     // Years of experience implied by a seniority label when a listing does
     // not state min_years_experience explicitly.
     'seniority_years' => [

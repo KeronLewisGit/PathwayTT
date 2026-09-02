@@ -6,8 +6,7 @@
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <x-page width="narrow">
             @if ($reason = $job->ineligibilityReason())
                 <div class="callout-danger">
                     <strong>Not eligible from Trinidad &amp; Tobago:</strong> {{ $reason }}.
@@ -23,10 +22,10 @@
             {{-- Your match --}}
             <div class="card p-6">
                 <div class="flex flex-wrap items-center justify-between gap-4">
-                    <h3 class="text-lg font-medium text-gray-900">Your match</h3>
+                    <h3 class="card-title">Your match</h3>
                     @if ($match && $match->is_eligible)
-                        @php $tone = $match->score >= 75 ? 'bg-green-100 text-green-800' : ($match->score >= 55 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'); @endphp
-                        <span class="inline-flex h-12 w-12 items-center justify-center rounded-full text-base font-bold {{ $tone }}">{{ $match->score }}</span>
+                        @php $tone = $match->score >= 75 ? 'score-high' : ($match->score >= 55 ? 'score-mid' : 'score-low'); @endphp
+                        <span class="score h-12 w-12 text-base {{ $tone }}">{{ $match->score }}</span>
                     @endif
                 </div>
 
@@ -141,7 +140,7 @@
 
             @if ($requiredSkills->isNotEmpty() || $preferredSkills->isNotEmpty())
                 <div class="card p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Skills</h3>
+                    <h3 class="card-title">Skills</h3>
 
                     @if ($requiredSkills->isNotEmpty())
                         <p class="mt-3 text-sm font-medium text-gray-700">Required</p>
@@ -165,7 +164,7 @@
 
             @if ($job->requirements)
                 <div class="card p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Requirements</h3>
+                    <h3 class="card-title">Requirements</h3>
                     <ul class="mt-3 list-disc list-inside space-y-1 text-sm text-gray-800">
                         @foreach ($job->requirements as $line)
                             <li>{{ $line }}</li>
@@ -176,10 +175,9 @@
 
             @if ($job->description)
                 <div class="card p-6">
-                    <h3 class="text-lg font-medium text-gray-900">Description</h3>
+                    <h3 class="card-title">Description</h3>
                     <div class="mt-3 text-sm text-gray-800 whitespace-pre-line">{{ $job->description }}</div>
                 </div>
             @endif
-        </div>
-    </div>
+    </x-page>
 </x-app-layout>

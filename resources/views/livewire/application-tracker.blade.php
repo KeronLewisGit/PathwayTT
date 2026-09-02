@@ -81,7 +81,7 @@
                         <p class="text-xs text-red-600">{{ $message }}</p>
                     @enderror
                     @if (session("notes-saved-{$application->id}"))
-                        <p class="text-xs text-green-600">{{ session("notes-saved-{$application->id}") }}</p>
+                        <x-flash :message="session("notes-saved-{$application->id}")" class="text-xs" />
                     @endif
                 </div>
             </article>

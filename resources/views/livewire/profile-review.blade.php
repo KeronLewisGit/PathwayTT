@@ -1,7 +1,7 @@
 <div class="space-y-8">
     {{-- ── Profile details ─────────────────────────────────────────── --}}
     <section class="card p-6">
-        <h3 class="text-lg font-medium text-gray-900">Your details</h3>
+        <h3 class="card-title">Your details</h3>
         <p class="mt-1 text-sm text-gray-500">
             Extracted from your resume where possible — please check and correct.
             Fields you set are never changed by re-parsing.
@@ -20,7 +20,7 @@
             </div>
 
             <div>
-                <x-input-label for="region" value="Region (T&amp;T)" />
+                <x-input-label for="region" value="Region (T&T)" />
                 <select id="region" wire:model="region" class="mt-1 form-control">
                     <option value="">— Select —</option>
                     @foreach (App\Livewire\ProfileReview::REGIONS as $region)
@@ -78,7 +78,7 @@
             <div class="sm:col-span-2 flex items-center gap-3">
                 <x-primary-button type="submit">Save details</x-primary-button>
                 @if (session('saved-profile'))
-                    <span class="text-sm font-medium text-green-600">{{ session('saved-profile') }}</span>
+                    <x-flash :message="session('saved-profile')" />
                 @endif
             </div>
         </form>
@@ -86,7 +86,7 @@
 
     {{-- ── Skills ──────────────────────────────────────────────────── --}}
     <section class="card p-6">
-        <h3 class="text-lg font-medium text-gray-900">Skills</h3>
+        <h3 class="card-title">Skills</h3>
         <p class="mt-1 text-sm text-gray-500">Confirm what we found and add anything missing. Rate yourself 1–5.</p>
 
         <div class="mt-4 flex flex-wrap gap-2">
@@ -140,9 +140,9 @@
     {{-- ── Work history ────────────────────────────────────────────── --}}
     <section class="card p-6">
         <div class="flex items-center gap-3">
-            <h3 class="text-lg font-medium text-gray-900">Work history</h3>
+            <h3 class="card-title">Work history</h3>
             @if (session('saved-work'))
-                <span class="text-sm font-medium text-green-600">{{ session('saved-work') }}</span>
+                <x-flash :message="session('saved-work')" />
             @endif
         </div>
 
@@ -222,9 +222,9 @@
     {{-- ── Education ───────────────────────────────────────────────── --}}
     <section class="card p-6">
         <div class="flex items-center gap-3">
-            <h3 class="text-lg font-medium text-gray-900">Education</h3>
+            <h3 class="card-title">Education</h3>
             @if (session('saved-education'))
-                <span class="text-sm font-medium text-green-600">{{ session('saved-education') }}</span>
+                <x-flash :message="session('saved-education')" />
             @endif
         </div>
 
@@ -299,9 +299,9 @@
     {{-- ── Certifications ──────────────────────────────────────────── --}}
     <section class="card p-6">
         <div class="flex items-center gap-3">
-            <h3 class="text-lg font-medium text-gray-900">Certifications</h3>
+            <h3 class="card-title">Certifications</h3>
             @if (session('saved-certification'))
-                <span class="text-sm font-medium text-green-600">{{ session('saved-certification') }}</span>
+                <x-flash :message="session('saved-certification')" />
             @endif
         </div>
 

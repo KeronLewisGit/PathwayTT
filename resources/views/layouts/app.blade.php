@@ -1,3 +1,4 @@
+@props(['title' => null])
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="h-full bg-gray-50">
     <head>
@@ -5,8 +6,9 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="theme-color" content="#213c5f">
+        <link rel="icon" href="/favicon.svg" type="image/svg+xml">
 
-        <title>{{ isset($title) ? "{$title} · " : '' }}{{ config('app.name', 'PathwayTT') }}</title>
+        <title>{{ $title ? "{$title} · " : '' }}{{ config('app.name', 'PathwayTT') }}</title>
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -22,7 +24,7 @@
             <!-- Page Heading -->
             @isset($header)
                 <header class="bg-white border-b border-gray-200">
-                    <div class="max-w-7xl mx-auto py-5 px-4 sm:px-6 lg:px-8">
+                    <div class="max-w-7xl mx-auto py-4 sm:py-5 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
                 </header>

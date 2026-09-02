@@ -1,13 +1,7 @@
-<x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Jobs') }}
-        </h2>
-    </x-slot>
+<x-app-layout title="Jobs">
+    <x-slot name="header"><x-page-title title="Jobs" /></x-slot>
 
-    <div class="py-12">
-        <div class="max-w-6xl mx-auto sm:px-6 lg:px-8">
+    <x-page>
             @livewire(App\Livewire\JobList::class)
-        </div>
-    </div>
+    </x-page>
 </x-app-layout>

@@ -191,6 +191,20 @@ class MatchScoringService implements MatchScorerInterface
         $capReason = $cap !== null
             ? sprintf('Missing %d required %s caps the score at %d', $missingRequired->count(), $missingRequired->count() === 1 ? 'skill' : 'skills', $cap)
             : null;
+
+        // Confidence caps: no skills evidence on either side means the rest of
+        // the factors would inflate the score into a false "perfect match".
+        $confidence = config('matching.confidence_caps', []);
+        if ($skills->isEmpty() && ! empty($confidence['listing_without_skills']) && ($cap === null || $confidence['listing_without_skills'] < $cap)) {
+            $cap = (int) $confidence['listing_without_skills'];
+            $capReason = "This listing states no skills we recognise, so the score is provisional (capped at {$cap})";
+        }
+        if ($candidate->skillIds === [] && ! empty($confidence['candidate_without_skills']) && ($cap === null || $confidence['candidate_without_skills'] < $cap)) {
+            $cap = (int) $confidence['candidate_without_skills'];
+            $capReason = "Your profile has no skills yet, so scores are capped at {$cap}";
+            $gaps[] = 'Add your skills to your profile — matching only counts skills that are on it';
+        }
+
         $score = $cap !== null ? min($raw, $cap) : $raw;
 
         $missingSkills = $missingRequired->map(fn (Skill $s) => ['id' => $s->id, 'name' => $s->name, 'slug' => $s->slug, 'required' => true])

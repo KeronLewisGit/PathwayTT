@@ -19,7 +19,7 @@
             @endif
 
             @if (session('matches-recompute'))
-                <span class="ml-2 font-medium text-green-600">{{ session('matches-recompute') }}</span>
+                <x-flash :message="session('matches-recompute')" />
             @endif
         </div>
 
@@ -30,7 +30,7 @@
                     Show ineligible
                 </label>
             @endif
-            <button type="button" wire:click="recompute" class="text-gray-600 hover:text-gray-900">Recompute</button>
+            <button type="button" wire:click="recompute" class="btn-secondary btn-sm">Recompute</button>
             <a href="{{ route('preferences.index') }}" class="link">Edit preferences</a>
         </div>
     </div>
@@ -93,13 +93,13 @@
                 $breakdown = $match->score_breakdown ?? [];
                 $missingRequired = collect($match->missing_skills ?? [])->where('required', true);
                 $missingPreferred = collect($match->missing_skills ?? [])->where('required', false);
-                $tone = $match->score >= 75 ? 'bg-green-100 text-green-800' : ($match->score >= $threshold ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700');
+                $tone = $match->score >= 75 ? 'score-high' : ($match->score >= $threshold ? 'score-mid' : 'score-low');
             @endphp
 
             <article class="p-4 sm:p-5" x-data="{ open: false }">
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-start">
                     <div class="shrink-0">
-                        <span class="inline-flex h-14 w-14 items-center justify-center rounded-full text-lg font-bold {{ $tone }}" title="Match score">
+                        <span class="score h-14 w-14 text-lg {{ $tone }}" title="Match score">
                             {{ $match->score }}
                         </span>
                     </div>
@@ -123,19 +123,45 @@
                         <p class="mt-2 text-sm text-gray-700">{{ $breakdown['summary'] ?? '' }}</p>
 
                         @if ($missingRequired->isNotEmpty() || $missingPreferred->isNotEmpty() || ! empty($breakdown['gaps']))
-                            <div class="mt-2 text-sm">
+                            <div class="mt-2 text-sm" x-data="{ more: false }">
                                 <p class="font-medium text-gray-800">What you're missing</p>
-                                <ul class="mt-1 space-y-0.5 text-gray-700">
-                                    @foreach ($missingRequired as $skill)
-                                        <li><span class="inline-block rounded bg-red-50 px-1.5 text-xs font-medium text-red-800">required</span> {{ $skill['name'] }}</li>
-                                    @endforeach
-                                    @foreach ($missingPreferred as $skill)
-                                        <li><span class="inline-block rounded bg-gray-100 px-1.5 text-xs font-medium text-gray-600">nice to have</span> {{ $skill['name'] }}</li>
-                                    @endforeach
-                                    @foreach ($breakdown['gaps'] ?? [] as $gap)
-                                        <li>{{ $gap }}</li>
-                                    @endforeach
-                                </ul>
+
+                                @if ($missingRequired->isNotEmpty())
+                                    <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                        <span class="text-xs text-gray-500">Required:</span>
+                                        @foreach ($missingRequired as $skill)
+                                            <span class="badge-danger">{{ $skill['name'] }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
+
+                                @if ($missingPreferred->isNotEmpty())
+                                    @php $shown = $missingPreferred->take(4); $hidden = $missingPreferred->slice(4); @endphp
+                                    <div class="mt-1 flex flex-wrap items-center gap-1.5">
+                                        <span class="text-xs text-gray-500">Nice to have:</span>
+                                        @foreach ($shown as $skill)
+                                            <span class="badge-neutral">{{ $skill['name'] }}</span>
+                                        @endforeach
+                                        @if ($hidden->isNotEmpty())
+                                            <template x-if="more">
+                                                <span class="contents">
+                                                    @foreach ($hidden as $skill)
+                                                        <span class="badge-neutral">{{ $skill['name'] }}</span>
+                                                    @endforeach
+                                                </span>
+                                            </template>
+                                            <button type="button" @click="more = !more" class="text-xs link" x-text="more ? 'Show fewer' : '+{{ $hidden->count() }} more'"></button>
+                                        @endif
+                                    </div>
+                                @endif
+
+                                @if (! empty($breakdown['gaps']))
+                                    <ul class="mt-1 space-y-0.5 text-gray-700">
+                                        @foreach ($breakdown['gaps'] as $gap)
+                                            <li>{{ $gap }}</li>
+                                        @endforeach
+                                    </ul>
+                                @endif
                             </div>
                         @endif
 
