@@ -47,8 +47,12 @@ php artisan serve             # http://localhost:8000
 php artisan queue:work        # second terminal: parsing, matching, plans
 ```
 
-Demo accounts (local only): `demo@pathwaytt.test` and `admin@pathwaytt.test`, password
-`password`. The admin panel is at `/admin`.
+Demo accounts (local, or any instance with `APP_DEMO_DATA=true`), password `password`:
+`demo@pathwaytt.test` (Aaliyah Mohammed, a filled-in job seeker mid-search),
+`marcus@pathwaytt.test` (a welder/pipefitter), `tester1..3@pathwaytt.test` (empty), and
+`admin@pathwaytt.test` for the admin panel at `/admin`. Eighteen `[DEMO]` local listings
+are seeded alongside. `php artisan demo:reset` restores all of it between tester sessions.
+Hand testers [docs/TESTER-GUIDE.md](docs/TESTER-GUIDE.md).
 
 Windows/Laragon users: PHP needs a CA bundle for the job-board adapters —
 `curl.cainfo` / `openssl.cafile` in `php.ini` pointing at Laragon's `etc/ssl/cacert.pem`.

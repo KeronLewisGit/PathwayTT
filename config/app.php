@@ -86,7 +86,18 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'version' => '1.1.0',
+    'version' => '1.2.0',
+
+    /*
+    |--------------------------------------------------------------------------
+    | Demo data
+    |--------------------------------------------------------------------------
+    | Seed the clearly-labelled demo accounts and [DEMO] listings. Always on
+    | in the local environment; set APP_DEMO_DATA=true on a tester preview
+    | instance. Leave unset in production.
+    */
+
+    'demo_data' => (bool) env('APP_DEMO_DATA', false),
 
     /*
     |--------------------------------------------------------------------------

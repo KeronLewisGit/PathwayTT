@@ -3,43 +3,56 @@
 namespace Database\Seeders;
 
 use App\Models\User;
+use Database\Seeders\Concerns\DemoOnly;
 use Illuminate\Database\Seeder;
 
+/**
+ * Demo accounts (local / APP_DEMO_DATA only). Password for all: "password".
+ *
+ *  admin@pathwaytt.test   — Filament admin
+ *  demo@pathwaytt.test    — Aaliyah Mohammed: office / customer-service
+ *                           profile, filled in and active (see DemoActivitySeeder)
+ *  marcus@pathwaytt.test  — Marcus Charles: welder / pipefitter, energy sector
+ *  tester1..3@pathwaytt.test — empty, verified accounts so testers can
+ *                           experience onboarding from scratch
+ */
 class DemoUserSeeder extends Seeder
 {
-    /**
-     * Local-dev demo account. Guarded in DatabaseSeeder to local env only.
-     */
+    use DemoOnly;
+
+    public const DEMO_EMAILS = [
+        'demo@pathwaytt.test', 'marcus@pathwaytt.test',
+        'tester1@pathwaytt.test', 'tester2@pathwaytt.test', 'tester3@pathwaytt.test',
+    ];
+
     public function run(): void
     {
+        if (! self::demoAllowed()) {
+            return;
+        }
+
         // Local admin for the Filament panel (production admins are created
-        // with `php artisan make:filament-user` + setting is_admin).
+        // per docs/DEPLOYMENT.md). is_admin is deliberately not mass-assignable.
         User::query()->firstOrCreate(
             ['email' => 'admin@pathwaytt.test'],
-            [
-                'name' => 'Admin',
-                'password' => 'password',
-                'email_verified_at' => now(),
-            ],
-        )->forceFill(['is_admin' => true])->save(); // is_admin is deliberately not mass-assignable
+            ['name' => 'Admin', 'password' => 'password', 'email_verified_at' => now()],
+        )->forceFill(['is_admin' => true])->save();
 
-        $user = User::query()->firstOrCreate(
-            ['email' => 'demo@pathwaytt.test'],
-            [
-                'name' => 'Demo User',
-                'password' => 'password', // hashed by the User model cast
-                'email_verified_at' => now(),
-            ],
-        );
+        foreach ([
+            'demo@pathwaytt.test' => 'Aaliyah Mohammed',
+            'marcus@pathwaytt.test' => 'Marcus Charles',
+            'tester1@pathwaytt.test' => 'Tester One',
+            'tester2@pathwaytt.test' => 'Tester Two',
+            'tester3@pathwaytt.test' => 'Tester Three',
+        ] as $email => $name) {
+            $user = User::query()->firstOrCreate(
+                ['email' => $email],
+                ['name' => $name, 'password' => 'password', 'email_verified_at' => now()],
+            );
 
-        $user->profile()->firstOrCreate([], [
-            'full_name' => 'Demo User',
-            'region' => 'Port of Spain',
-            'years_experience' => 3,
-            'highest_education_level' => 'cape',
-            'has_nis' => true,
-            'has_bir' => true,
-            'willing_to_relocate' => true,
-        ]);
+            if ($user->name !== $name) {
+                $user->forceFill(['name' => $name])->save();
+            }
+        }
     }
 }
