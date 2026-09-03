@@ -52,6 +52,16 @@ test('robots.txt is honoured with longest-match allow and disallow rules', funct
         ->and($robots->allows('https://missing.example/whatever'))->toBeTrue();
 });
 
+test('the real caribbeanjobs robots.txt allows our crawler but blocks the named AI bots', function () {
+    Http::fake(['www.caribbeanjobs.com/robots.txt' => Http::response(file_get_contents(base_path('tests/Fixtures/localboards/caribbeanjobs-robots.txt')))]);
+    $robots = app(RobotsTxt::class);
+
+    expect($robots->allows('https://www.caribbeanjobs.com/ShowResults.aspx?Location=124&Page=2'))->toBeTrue()
+        ->and($robots->allows('https://www.caribbeanjobs.com/WebService/AjaxWS.asmx/Search'))->toBeFalse()
+        ->and($robots->allows('https://www.caribbeanjobs.com/ShowResults.aspx?Location=124', 'ClaudeBot'))->toBeFalse()
+        ->and($robots->allows('https://www.caribbeanjobs.com/anything', 'GPTBot'))->toBeFalse();
+});
+
 test('caribbeanjobs cards become local T&T listings with excerpts only, and pagination follows the index', function () {
     $this->seed(SkillSeeder::class);
     Http::fake([

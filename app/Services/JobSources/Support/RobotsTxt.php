@@ -52,8 +52,11 @@ class RobotsTxt
             }
         });
 
+        // A group is one or more consecutive User-agent lines followed by
+        // rules; the next User-agent line after any rule starts a new group.
         $groups = [];
         $currentAgents = [];
+        $inRules = false;
         foreach (preg_split('/\r?\n/', $body) as $line) {
             $line = trim(preg_replace('/#.*$/', '', $line));
             if ($line === '' || ! str_contains($line, ':')) {
@@ -63,16 +66,19 @@ class RobotsTxt
             $field = strtolower($field);
 
             if ($field === 'user-agent') {
+                if ($inRules) {
+                    $currentAgents = [];
+                    $inRules = false;
+                }
                 $currentAgents[] = strtolower($value);
                 continue;
             }
+
             if (in_array($field, ['allow', 'disallow'], true)) {
+                $inRules = true;
                 foreach ($currentAgents as $agent) {
                     $groups[$agent][] = [$field, $value];
                 }
-            }
-            if (! in_array($field, ['allow', 'disallow'], true)) {
-                // any other directive ends the user-agent run for the next group header
             }
         }
 
