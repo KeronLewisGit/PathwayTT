@@ -11,7 +11,6 @@ use App\Services\JobSources\FeedStatus;
 use App\Services\SalaryFormatter;
 use App\Support\Countries;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -52,20 +51,8 @@ class JobList extends Component
             SyncJobSourcesJob::dispatch();
         }
 
-        $pref = Auth::user()?->jobPreference()->first();
-
-        if (! $pref) {
-            return;
-        }
-
-        // Pre-fill from preferences only when the URL carries no explicit filter.
-        if ($this->industry === '' && $pref->industry_id) {
-            $this->industry = (string) $pref->industry_id;
-        }
-
-        if ($this->arrangement === '' && count($pref->work_arrangements ?? []) === 1) {
-            $this->arrangement = $pref->work_arrangements[0];
-        }
+        // The feed opens wide on purpose: browsing everything is its job, while
+        // Matches is the preference-driven view. Filters persist in the URL.
     }
 
     public function updated(string $property): void

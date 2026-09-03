@@ -139,15 +139,16 @@ test('the feed hides demo listings by default and shows freshness with source co
     $this->actingAs(verifiedJobSeeker())->get('/jobs')->assertOk()->assertSee('[DEMO] Pretend Role')->assertSee('3 open listings');
 });
 
-test('saved preferences pre-fill the job list filters', function () {
+test('the job feed opens unfiltered regardless of saved preferences', function () {
     $user = verifiedJobSeeker();
     $ict = Industry::factory()->create();
     $user->jobPreference()->create(['industry_id' => $ict->id, 'work_arrangements' => ['remote_international']]);
 
     Livewire::actingAs($user)
         ->test(JobList::class)
-        ->assertSet('industry', (string) $ict->id)
-        ->assertSet('arrangement', 'remote_international');
+        ->assertSet('industry', '')
+        ->assertSet('arrangement', '')
+        ->assertSet('location', '');
 });
 
 test('the job detail page links out to the original posting and lists skills', function () {
