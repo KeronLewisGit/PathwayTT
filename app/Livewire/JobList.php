@@ -7,6 +7,7 @@ use App\Enums\WorkArrangement;
 use App\Models\Industry;
 use App\Models\JobListing;
 use App\Services\SalaryFormatter;
+use App\Support\Countries;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
@@ -34,6 +35,10 @@ class JobList extends Component
     #[Url]
     public string $employment = '';
 
+    /** "TT", another ISO country code, or "remote" (remote-international, any employer country). */
+    #[Url]
+    public string $location = '';
+
     #[Url]
     public bool $eligibleOnly = true;
 
@@ -57,14 +62,14 @@ class JobList extends Component
 
     public function updated(string $property): void
     {
-        if (in_array($property, ['search', 'industry', 'arrangement', 'employment', 'eligibleOnly'], true)) {
+        if (in_array($property, ['search', 'industry', 'arrangement', 'employment', 'location', 'eligibleOnly'], true)) {
             $this->resetPage();
         }
     }
 
     public function clearFilters(): void
     {
-        $this->reset('search', 'industry', 'arrangement', 'employment');
+        $this->reset('search', 'industry', 'arrangement', 'employment', 'location');
         $this->eligibleOnly = true;
         $this->resetPage();
     }
@@ -72,6 +77,24 @@ class JobList extends Component
     public function getIndustriesProperty(): Collection
     {
         return Industry::query()->orderBy('name')->get(['id', 'name']);
+    }
+
+    /**
+     * Location choices from the countries that actually appear on open
+     * listings: T&T first, then "remote from anywhere", then the rest by name.
+     *
+     * @return array<string, string> value => label
+     */
+    public function getLocationsProperty(): array
+    {
+        $codes = JobListing::query()->active()->whereNotNull('country')->distinct()->pluck('country')
+            ->map(fn ($c) => strtoupper($c))
+            ->reject(fn ($c) => $c === 'TT')
+            ->mapWithKeys(fn ($c) => [$c => Countries::name($c)])
+            ->sort()
+            ->all();
+
+        return ['TT' => 'Trinidad & Tobago (on-site / hybrid)', 'remote' => 'Remote — work from T&T for a foreign employer'] + $codes;
     }
 
     public function render(SalaryFormatter $salary)
@@ -83,6 +106,8 @@ class JobList extends Component
             ->when($this->industry !== '', fn ($q) => $q->where('industry_id', (int) $this->industry))
             ->when($this->arrangement !== '', fn ($q) => $q->where('work_arrangement', $this->arrangement))
             ->when($this->employment !== '', fn ($q) => $q->where('employment_type', $this->employment))
+            ->when($this->location === 'remote', fn ($q) => $q->where('work_arrangement', 'remote_international'))
+            ->when($this->location !== '' && $this->location !== 'remote', fn ($q) => $q->where('country', strtoupper($this->location)))
             ->when($this->eligibleOnly, fn ($q) => $q->eligibleFromTT())
             ->orderByDesc('posted_at')
             ->orderByDesc('id')

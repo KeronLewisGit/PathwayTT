@@ -88,6 +88,31 @@ test('the job list filters by search, industry, arrangement and employment type'
         ->assertSee('Laravel Developer')->assertSee('Rig Technician')->assertSee('Remote React Developer');
 });
 
+test('the location dropdown filters by country or remote and lists only countries present', function () {
+    JobListing::factory()->bare()->create(['title' => 'Local Clerk', 'country' => 'TT']);
+    JobListing::factory()->bare()->create(['title' => 'Tobago Front Desk', 'country' => 'TT', 'location_text' => 'Crown Point, Tobago']);
+    JobListing::factory()->remoteWorldwide()->create(['title' => 'Remote From Canada Co', 'country' => 'CA']);
+    JobListing::factory()->remoteWorldwide()->create(['title' => 'Remote From UK Co', 'country' => 'GB']);
+    JobListing::factory()->bare()->create(['title' => 'Closed Elsewhere', 'country' => 'DE', 'is_active' => false]);
+
+    $component = Livewire::actingAs(verifiedJobSeeker())->test(JobList::class);
+
+    $locations = $component->instance()->locations;
+    expect(array_keys($locations))->toBe(['TT', 'remote', 'CA', 'GB']) // T&T, remote, then by name; inactive DE excluded
+        ->and($locations['CA'])->toBe('Canada');
+
+    $component->set('location', 'TT')
+        ->assertSee('Local Clerk')->assertSee('Tobago Front Desk')->assertDontSee('Remote From Canada Co');
+
+    $component->set('location', 'remote')
+        ->assertSee('Remote From Canada Co')->assertSee('Remote From UK Co')->assertDontSee('Local Clerk');
+
+    $component->set('location', 'GB')
+        ->assertSee('Remote From UK Co')->assertDontSee('Remote From Canada Co')->assertDontSee('Local Clerk');
+
+    $component->call('clearFilters')->assertSet('location', '')->assertSee('Local Clerk')->assertSee('Remote From Canada Co');
+});
+
 test('saved preferences pre-fill the job list filters', function () {
     $user = verifiedJobSeeker();
     $ict = Industry::factory()->create();

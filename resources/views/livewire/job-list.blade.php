@@ -1,13 +1,20 @@
 <div class="space-y-6">
     {{-- Filters --}}
     <div class="card p-4">
-        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">
             <div class="lg:col-span-2">
                 <label for="search" class="sr-only">Search</label>
                 <x-text-input id="search" wire:model.live.debounce.400ms="search" placeholder="Search title, company or location" class="block w-full" />
             </div>
 
-            <select wire:model.live="industry" class="form-control">
+            <select wire:model.live="location" class="form-control" aria-label="Location">
+                <option value="">Any location</option>
+                @foreach ($this->locations as $value => $label)
+                    <option value="{{ $value }}">{{ $label }}</option>
+                @endforeach
+            </select>
+
+            <select wire:model.live="industry" class="form-control" aria-label="Industry">
                 <option value="">All industries</option>
                 @foreach ($this->industries as $industry)
                     <option value="{{ $industry->id }}">{{ $industry->name }}</option>
