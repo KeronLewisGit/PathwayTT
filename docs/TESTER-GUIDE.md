@@ -15,8 +15,17 @@ fictional; the rest come from public remote job boards.
 | `marcus@pathwaytt.test` | **Marcus Charles** — welder/pipefitter, energy sector | A trades profile matching local on-site roles. |
 | `tester1@pathwaytt.test` `tester2@…` `tester3@…` | Empty accounts | Go through onboarding from zero: upload a resume, review, set preferences. |
 
-You can also register your own account. (If verification emails don't arrive on this
-instance, use a tester account instead.)
+## Or register as a new user (recommended)
+
+Use **Register** on the login screen with your name, email and a password, exactly as a
+real job seeker would. You'll be asked to verify your email:
+
+- If this instance sends real email, click the link in the message you receive.
+- If it's a test instance that captures email, the "verify your email" screen tells you
+  where to read it (a shared inbox page) — open it, find the message with your address,
+  and click the link.
+
+Then you start from an empty dashboard, which is the experience we most want feedback on.
 
 ## What to try, in order
 

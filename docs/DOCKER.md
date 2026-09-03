@@ -77,6 +77,38 @@ docker compose cp docs/job-import-template.csv app:/var/www/html/storage/app/pri
 docker compose exec app php artisan job:sync --source=csv
 ```
 
+## Letting testers in
+
+**Same network (office / home Wi-Fi).** Find this machine's address (`ipconfig` →
+IPv4), then start the stack with the public URL so links in emails point at it:
+
+```powershell
+$env:APP_URL_PUBLIC = "http://192.168.1.25:8088"
+$env:DEMO_MAIL_UI   = "http://192.168.1.25:8025"
+docker compose up -d
+```
+
+Testers open `http://192.168.1.25:8088`, register, and read their verification email at
+`http://192.168.1.25:8025` (Mailpit shows every message the app sends; the verify screen
+links there). Windows Firewall may prompt to allow Docker on the private network.
+
+**Real email instead of Mailpit.** Put SMTP details in the `.env` next to
+`docker-compose.yml` (any provider: your hosting account's SMTP, Gmail with an app
+password, Brevo, Mailgun…), then `docker compose up -d`:
+
+```
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USERNAME=you@example.com
+SMTP_PASSWORD=app-password
+SMTP_SCHEME=smtp          # smtp = STARTTLS on 587, smtps = TLS on 465
+SMTP_FROM=you@example.com
+DEMO_MAIL_UI=             # blank: verify screen no longer points at Mailpit
+```
+
+Verification and password-reset emails then reach testers wherever they are. Reset the
+demo accounts between sessions with `docker compose exec app php artisan demo:reset`.
+
 ## Configuration
 
 All settings are environment variables in `docker-compose.yml` (the

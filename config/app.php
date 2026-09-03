@@ -86,7 +86,7 @@ return [
     |--------------------------------------------------------------------------
     */
 
-    'version' => '1.2.0',
+    'version' => '1.2.1',
 
     /*
     |--------------------------------------------------------------------------
@@ -98,6 +98,10 @@ return [
     */
 
     'demo_data' => (bool) env('APP_DEMO_DATA', false),
+
+    // Tester instances only: where captured email can be read (e.g. Mailpit),
+    // shown on the "verify your email" screen. Leave unset in production.
+    'demo_mail_ui' => env('APP_DEMO_MAIL_UI'),
 
     /*
     |--------------------------------------------------------------------------

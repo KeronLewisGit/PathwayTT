@@ -15,7 +15,10 @@ x-app-env: &app-env
   APP_NAME: PathwayTT
   APP_ENV: local            # "local" also enables the demo user + demo jobs seeders
   APP_DEBUG: "true"
-  APP_URL: http://localhost:${APP_PORT:-8088}
+  # Set APP_URL_PUBLIC=http://<your-LAN-ip>:8088 so links in emails work on other devices.
+  APP_URL: ${APP_URL_PUBLIC:-http://localhost:${APP_PORT:-8088}}
+  APP_DEMO_DATA: "true"
+  APP_DEMO_MAIL_UI: ${DEMO_MAIL_UI:-http://localhost:8025}
   APP_KEY: ${APP_KEY:-}
   APP_DISPLAY_TIMEZONE: America/Port_of_Spain
   LOG_CHANNEL: stderr
@@ -32,10 +35,15 @@ x-app-env: &app-env
   # A dedicated queue container runs here; the schedule:run fallback is for shared hosts.
   QUEUE_VIA_SCHEDULER: "false"
   FILESYSTEM_DISK: local
+  # Email: Mailpit by default (captured, read at :8025). To send REAL email to
+  # testers, set SMTP_* in the .env next to this file (see docs/DOCKER.md).
   MAIL_MAILER: smtp
-  MAIL_HOST: mailpit
-  MAIL_PORT: "1025"
-  MAIL_FROM_ADDRESS: hello@pathwaytt.test
+  MAIL_HOST: ${SMTP_HOST:-mailpit}
+  MAIL_PORT: ${SMTP_PORT:-1025}
+  MAIL_USERNAME: ${SMTP_USERNAME:-}
+  MAIL_PASSWORD: ${SMTP_PASSWORD:-}
+  MAIL_SCHEME: ${SMTP_SCHEME:-}
+  MAIL_FROM_ADDRESS: ${SMTP_FROM:-hello@pathwaytt.test}
   MAIL_FROM_NAME: PathwayTT
   RESUME_PARSER_DRIVER: ${RESUME_PARSER_DRIVER:-rule}
   ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
