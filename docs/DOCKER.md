@@ -106,8 +106,23 @@ SMTP_FROM=you@example.com
 DEMO_MAIL_UI=             # blank: verify screen no longer points at Mailpit
 ```
 
-Verification and password-reset emails then reach testers wherever they are. Reset the
-demo accounts between sessions with `docker compose exec app php artisan demo:reset`.
+Verification and password-reset emails then reach testers wherever they are. Check the
+settings with `docker compose exec app php artisan mail:test you@example.com` — it prints
+the mailer in use and the server's reply. Reset the demo accounts between sessions with
+`docker compose exec app php artisan demo:reset`.
+
+Where to get SMTP credentials:
+
+- **Gmail / Google Workspace** — turn on 2-Step Verification, create an *App password*
+  (Google Account → Security → App passwords), then `SMTP_HOST=smtp.gmail.com`,
+  `SMTP_PORT=587`, `SMTP_SCHEME=smtp`, `SMTP_USERNAME=you@gmail.com`,
+  `SMTP_PASSWORD=<16-char app password>`, `SMTP_FROM=you@gmail.com`.
+- **Your own domain's mailbox** (cPanel / Microsoft 365 / company mail) — the provider's
+  outgoing (SMTP) server, usually port 587 with `smtp` or 465 with `smtps`, and the
+  mailbox login.
+- **A sending service** (Brevo, Mailgun, Postmark, Resend…) — free tiers exist; they give
+  you an SMTP host, port 587 and a username/API key. Best for more than a handful of
+  testers because personal accounts rate-limit or land in spam.
 
 ## Configuration
 
