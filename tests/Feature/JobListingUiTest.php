@@ -113,6 +113,32 @@ test('the location dropdown filters by country or remote and lists only countrie
     $component->call('clearFilters')->assertSet('location', '')->assertSee('Local Clerk')->assertSee('Remote From Canada Co');
 });
 
+test('the feed hides demo listings by default and shows freshness with source counts', function () {
+    Illuminate\Support\Facades\Queue::fake();
+    JobListing::factory()->bare()->create(['title' => 'Real Local Role', 'source' => 'csv']);
+    JobListing::factory()->remoteWorldwide()->create(['title' => 'Real Remote Role', 'source' => 'remotive']);
+    JobListing::factory()->bare()->create(['title' => '[DEMO] Pretend Role', 'source' => 'demo']);
+    App\Models\JobSyncRun::query()->create(['source' => 'remotive', 'started_at' => now()->subMinutes(5), 'finished_at' => now()->subMinutes(4), 'fetched_count' => 1]);
+
+    $this->actingAs(verifiedJobSeeker())->get('/jobs')
+        ->assertOk()
+        ->assertSee('Live feed')
+        ->assertSee('2 open listings')
+        ->assertSee('Remotive · 1')
+        ->assertSee('Real Remote Role')
+        ->assertDontSee('[DEMO] Pretend Role');
+
+    // Fresh feed: no sync queued. Stale feed: one queued (unique job).
+    Illuminate\Support\Facades\Queue::assertNotPushed(App\Jobs\SyncJobSourcesJob::class);
+    App\Models\JobSyncRun::query()->update(['finished_at' => now()->subHours(3)]);
+    $this->actingAs(verifiedJobSeeker())->get('/jobs')->assertOk()->assertSee('3 hours ago');
+    Illuminate\Support\Facades\Queue::assertPushed(App\Jobs\SyncJobSourcesJob::class);
+
+    // Demo listings can be switched back into the feed for local demos.
+    config(['jobsources.show_demo_listings' => true]);
+    $this->actingAs(verifiedJobSeeker())->get('/jobs')->assertOk()->assertSee('[DEMO] Pretend Role')->assertSee('3 open listings');
+});
+
 test('saved preferences pre-fill the job list filters', function () {
     $user = verifiedJobSeeker();
     $ict = Industry::factory()->create();

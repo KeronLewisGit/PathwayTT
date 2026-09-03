@@ -78,7 +78,10 @@ The seeded FX rate is a placeholder flagged for review.
 
 ## Job sources
 
-`php artisan job:sync` runs every enabled source (nightly at 03:00 AST via the scheduler;
+The Jobs page is a live aggregate of real listings: `[DEMO]` rows are excluded unless
+`JOBSOURCE_SHOW_DEMO=true`, the page shows feed freshness and per-source counts, refreshes
+itself, and queues a sync when the last fetch is older than `JOBSOURCE_AUTO_REFRESH_MINUTES`.
+`php artisan job:sync` runs every enabled source (hourly via the scheduler;
 admins can also run it from **Admin → Jobs → Job sync**). Local T&T boards have no public
 APIs — enter local jobs manually or import the CSV template at
 `docs/job-import-template.csv`. Remote boards are throttled per their published limits and

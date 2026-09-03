@@ -1,4 +1,27 @@
-<div class="space-y-6">
+<div class="space-y-6" wire:poll.60s>
+    {{-- Live feed status --}}
+    <div class="card px-4 py-3 flex flex-col gap-2 text-sm sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex items-center gap-2 text-gray-700">
+            <span class="relative flex h-2.5 w-2.5" aria-hidden="true">
+                <span class="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-400 opacity-60"></span>
+                <span class="relative inline-flex h-2.5 w-2.5 rounded-full bg-green-500"></span>
+            </span>
+            <span>
+                <strong>Live feed</strong> · {{ number_format($feed['total']) }} open {{ Str::plural('listing', $feed['total']) }}
+                @if ($feed['updated_at'])
+                    · updated {{ $feed['updated_at']->diffForHumans() }}
+                @else
+                    · first fetch in progress
+                @endif
+            </span>
+        </div>
+        <div class="flex flex-wrap items-center gap-1.5 text-xs text-gray-500">
+            @foreach ($feed['sources'] as $source)
+                <span class="badge-neutral">{{ $source['label'] }} · {{ $source['count'] }}</span>
+            @endforeach
+        </div>
+    </div>
+
     {{-- Filters --}}
     <div class="card p-4">
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-6">

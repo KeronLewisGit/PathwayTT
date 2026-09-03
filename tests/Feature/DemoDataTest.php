@@ -14,7 +14,7 @@ use Database\Seeders\SkillSeeder;
 
 function seedDemo(): void
 {
-    config(['app.demo_data' => true]);
+    config(['app.demo_data' => true, 'jobsources.show_demo_listings' => true]);
     test()->seed([IndustrySeeder::class, SkillSeeder::class, LearningResourceSeeder::class, SettingSeeder::class]);
     test()->seed([DemoUserSeeder::class, DemoJobSeeder::class, DemoActivitySeeder::class]);
 }

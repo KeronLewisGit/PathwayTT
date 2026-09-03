@@ -93,7 +93,8 @@ This drives:
 
 - the **queue** (resume parsing, match recomputation, gap plans) — each minute
   `queue:work --stop-when-empty --max-time=50` runs and exits, so nothing overlaps;
-- the nightly **job:sync** at 03:00 AST.
+- the hourly **job:sync** that keeps the live feed current (each board adapter
+  respects its own rate limit, so hourly never over-calls a board).
 
 If the host's cron uses a different PHP binary, use its full path (e.g.
 `/usr/local/bin/php83`).

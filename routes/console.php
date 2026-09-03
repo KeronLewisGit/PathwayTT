@@ -35,12 +35,13 @@ if (config('queue.via_scheduler')) {
 | Job ingestion
 |--------------------------------------------------------------------------
 | Runs every enabled JobSourceInterface adapter (config/jobsources.php):
-| drains the CSV inbox now, remote APIs from Phase 6. Nightly at 03:00 AST
-| keeps remote-API traffic low; admins can also trigger it from the
-| Filament "Job sync" page at any time.
+| the CSV inbox and the remote boards. Hourly keeps the public feed live;
+| each board adapter enforces its own rate-limit window (Remotive 6h,
+| others 1h), so this never exceeds a board's published limits. The Jobs
+| page also queues a sync on demand when the feed is stale, and admins can
+| trigger one from the Filament "Job sync" page.
 */
 Schedule::command('job:sync')
-    ->dailyAt('03:00')
-    ->timezone(config('app.display_timezone'))
+    ->hourly()
     ->withoutOverlapping()
     ->onOneServer();

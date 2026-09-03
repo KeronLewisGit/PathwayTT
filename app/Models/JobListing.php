@@ -89,10 +89,12 @@ class JobListing extends Model
         return $this->hasMany(JobMatch::class);
     }
 
+    /** Open listings from real sources ([DEMO] rows only when configured in). */
     public function scopeActive(Builder $query): Builder
     {
         return $query->where('is_active', true)
-            ->where(fn (Builder $q) => $q->whereNull('closes_at')->orWhere('closes_at', '>', now()));
+            ->where(fn (Builder $q) => $q->whereNull('closes_at')->orWhere('closes_at', '>', now()))
+            ->when(! config('jobsources.show_demo_listings'), fn (Builder $q) => $q->where('source', '!=', 'demo'));
     }
 
     /** Filter by title, company or location (simple LIKE search — fine at this scale). */

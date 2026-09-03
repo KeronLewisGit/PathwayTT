@@ -70,6 +70,20 @@ return [
     | (US-only etc.) at ingest, so the table only holds jobs worth scoring.
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Live feed behaviour
+    |--------------------------------------------------------------------------
+    | show_demo_listings: include the [DEMO] listings in the public feed and
+    | matching (off = real sources only; demo data stays for tests/dev).
+    | auto_refresh_minutes: when someone opens the Jobs page and the last
+    | successful board fetch is older than this, a sync is queued (each board
+    | still honours its own rate-limit window).
+    */
+
+    'show_demo_listings' => (bool) env('JOBSOURCE_SHOW_DEMO', false),
+    'auto_refresh_minutes' => (int) env('JOBSOURCE_AUTO_REFRESH_MINUTES', 60),
+
     'remote' => [
         'user_agent' => env('JOBSOURCE_USER_AGENT', 'PathwayTT job matching for Trinidad & Tobago (+https://pathwaytt.test)'),
         'timeout' => 30,

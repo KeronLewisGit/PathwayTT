@@ -6,6 +6,8 @@ use App\Enums\EmploymentType;
 use App\Enums\WorkArrangement;
 use App\Models\Industry;
 use App\Models\JobListing;
+use App\Jobs\SyncJobSourcesJob;
+use App\Services\JobSources\FeedStatus;
 use App\Services\SalaryFormatter;
 use App\Support\Countries;
 use Illuminate\Support\Collection;
@@ -42,8 +44,14 @@ class JobList extends Component
     #[Url]
     public bool $eligibleOnly = true;
 
-    public function mount(): void
+    public function mount(FeedStatus $feed): void
     {
+        // Live feed: if the boards haven't been fetched recently, queue a sync now
+        // (unique job; each board still honours its own rate-limit window).
+        if ($feed->summary()['stale']) {
+            SyncJobSourcesJob::dispatch();
+        }
+
         $pref = Auth::user()?->jobPreference()->first();
 
         if (! $pref) {
@@ -97,7 +105,7 @@ class JobList extends Component
         return ['TT' => 'Trinidad & Tobago (on-site / hybrid)', 'remote' => 'Remote — work from T&T for a foreign employer'] + $codes;
     }
 
-    public function render(SalaryFormatter $salary)
+    public function render(SalaryFormatter $salary, FeedStatus $feed)
     {
         $jobs = JobListing::query()
             ->active()
@@ -115,6 +123,7 @@ class JobList extends Component
 
         return view('livewire.job-list', [
             'jobs' => $jobs,
+            'feed' => $feed->summary(),
             'salary' => $salary,
             'arrangements' => WorkArrangement::cases(),
             'employmentTypes' => EmploymentType::cases(),
