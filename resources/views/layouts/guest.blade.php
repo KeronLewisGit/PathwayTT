@@ -16,6 +16,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @livewireStyles
     </head>
     <body class="h-full font-sans text-gray-900 antialiased">
         <div class="min-h-full flex flex-col">
@@ -37,5 +38,7 @@
                 <p class="mt-6 text-xs text-gray-500">Times shown in AST (UTC-4) · v{{ config('app.version') }}</p>
             </div>
         </div>
+
+        @livewireScripts
     </body>
 </html>

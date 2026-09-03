@@ -16,6 +16,7 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @livewireStyles
     </head>
     <body class="h-full font-sans text-gray-900 antialiased">
         <div class="min-h-full flex flex-col bg-gray-50">
@@ -46,5 +47,8 @@
                 </div>
             </footer>
         </div>
+
+        {{-- Livewire + its bundled Alpine, on every page (auto-injection is off once these are explicit). --}}
+        @livewireScripts
     </body>
 </html>
