@@ -5,11 +5,11 @@ use App\Models\Industry;
 use App\Models\User;
 use Livewire\Livewire;
 
-test('the preferences page requires a verified login', function () {
+test('the preferences page requires a login and reminds unverified users', function () {
     $this->get('/preferences')->assertRedirect('/login');
 
     $unverified = User::factory()->create(['email_verified_at' => null]);
-    $this->actingAs($unverified)->get('/preferences')->assertRedirect(route('verification.notice', absolute: false));
+    $this->actingAs($unverified)->get('/preferences')->assertOk()->assertSee('Please verify your email');
 
     $user = User::factory()->create(['email_verified_at' => now()]);
     $this->actingAs($user)->get('/preferences')->assertOk()->assertSeeLivewire(JobPreferences::class);

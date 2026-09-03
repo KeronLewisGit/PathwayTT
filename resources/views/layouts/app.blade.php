@@ -21,6 +21,8 @@
         <div class="min-h-full flex flex-col bg-gray-50">
             @include('layouts.navigation')
 
+            <x-verify-banner />
+
             <!-- Page Heading -->
             @isset($header)
                 <header class="bg-white border-b border-gray-200">

@@ -7,16 +7,20 @@ use App\Http\Controllers\ResumeDownloadController;
 use App\Http\Controllers\SkillGapPlanPdfController;
 use Illuminate\Support\Facades\Route;
 
-// No public landing page yet (Phase 7): guests go to login, users to their dashboard.
+// Email verification is a reminder by default and a hard gate when
+// REQUIRE_EMAIL_VERIFICATION=true (see config/auth.php + VerifyEmailIfRequired).
+$member = ['auth', 'verified.optional'];
+
+// No public landing page yet: guests go to login, users to their dashboard.
 Route::get('/', function () {
     return redirect()->route(auth()->check() ? 'dashboard' : 'login');
 })->name('home');
 
 Route::get('/dashboard', DashboardController::class)
-    ->middleware(['auth', 'verified'])
+    ->middleware($member)
     ->name('dashboard');
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware($member)->group(function () {
     // Resume upload + parse status
     Route::view('/resume', 'resume.index')->name('resume.index');
 

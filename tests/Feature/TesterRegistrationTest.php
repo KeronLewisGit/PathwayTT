@@ -17,15 +17,18 @@ test('a new user registers, is asked to verify, and lands on an empty dashboard 
     $user = User::query()->where('email', 'real.tester@example.com')->firstOrFail();
     Notification::assertSentTo($user, VerifyEmail::class);
 
-    // Unverified: nudged to the notice page, not the app.
-    $this->actingAs($user)->get('/dashboard')->assertRedirect(route('verification.notice', absolute: false));
+    // Unverified: in the app already, with a persistent reminder.
+    $this->actingAs($user)->get('/dashboard')
+        ->assertOk()
+        ->assertSee('Please verify your email')
+        ->assertSee('Upload your resume');
 
     // Simulate clicking the emailed link.
     $link = (new VerifyEmail)->toMail($user)->actionUrl;
-    $this->actingAs($user)->get($link)->assertRedirectContains('/dashboard'); // back to where they were headed
+    $this->actingAs($user)->get($link)->assertRedirectContains('/dashboard');
 
     expect($user->fresh()->hasVerifiedEmail())->toBeTrue();
-    $this->actingAs($user)->get('/dashboard')->assertOk()->assertSee('Upload your resume');
+    $this->actingAs($user)->get('/dashboard')->assertOk()->assertDontSee('Please verify your email');
 });
 
 test('on a test instance the verify screen points testers at the captured mailbox or shows the link', function () {

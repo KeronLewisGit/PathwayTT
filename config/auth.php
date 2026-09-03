@@ -15,6 +15,17 @@ return [
     |
     */
 
+    /*
+    |--------------------------------------------------------------------------
+    | Email verification policy
+    |--------------------------------------------------------------------------
+    | false (default): users can use the app before verifying; a persistent
+    | reminder asks them to complete it. true: the app is gated behind
+    | verification (Laravel's "verified" middleware), as for a public launch.
+    */
+
+    'require_email_verification' => (bool) env('REQUIRE_EMAIL_VERIFICATION', false),
+
     'defaults' => [
         'guard' => env('AUTH_GUARD', 'web'),
         'passwords' => env('AUTH_PASSWORD_BROKER', 'users'),

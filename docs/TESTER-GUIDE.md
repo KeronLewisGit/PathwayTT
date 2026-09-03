@@ -18,14 +18,12 @@ fictional; the rest come from public remote job boards.
 ## Or register as a new user (recommended)
 
 Use **Register** on the login screen with your name, email and a password, exactly as a
-real job seeker would. You'll be asked to verify your email:
+real job seeker would. You go straight to your (empty) dashboard — the experience we most
+want feedback on. A banner reminds you to verify your email; do it when you can:
 
 - If this instance sends real email, click the link in the message you receive.
-- If it's a test instance that captures email, the "verify your email" screen tells you
-  where to read it (a shared inbox page) — open it, find the message with your address,
-  and click the link.
-
-Then you start from an empty dashboard, which is the experience we most want feedback on.
+- If it's a test instance that captures email, the banner tells you where to read it
+  (a shared inbox page) — open it, find the message with your address, click the link.
 
 ## What to try, in order
 

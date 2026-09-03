@@ -26,7 +26,7 @@ test('reference data seeds are complete and idempotent', function () {
         ->and(LearningResource::where('provider_type', 'international_online')->count())->toBeGreaterThan(5);
 });
 
-test('registration requires email verification before dashboard access', function () {
+test('registration lands on the dashboard with a verification reminder', function () {
     $response = $this->post('/register', [
         'name' => 'Test User',
         'email' => 'test@example.com',
@@ -36,8 +36,18 @@ test('registration requires email verification before dashboard access', functio
 
     $response->assertRedirect(route('dashboard', absolute: false));
 
-    // Unverified users are pushed to the verification notice.
-    $this->get('/dashboard')->assertRedirect(route('verification.notice', absolute: false));
+    // Verification is a reminder by default, not a gate.
+    $this->get('/dashboard')->assertOk()->assertSee('Please verify your email');
+});
+
+test('email verification can be made mandatory with one setting', function () {
+    config(['auth.require_email_verification' => true]);
+
+    $user = User::factory()->unverified()->create();
+    $this->actingAs($user)->get('/dashboard')->assertRedirect(route('verification.notice', absolute: false));
+
+    $user->markEmailAsVerified();
+    $this->actingAs($user)->get('/dashboard')->assertOk();
 });
 
 test('non-admin users cannot access the Filament admin panel', function () {
