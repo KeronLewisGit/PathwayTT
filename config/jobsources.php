@@ -18,7 +18,10 @@ return [
         App\Services\JobSources\HimalayasSource::class,
         App\Services\JobSources\RemoteOkSource::class,
         App\Services\JobSources\ArbeitnowSource::class,
-        App\Services\JobSources\LocalBoardSource::class,
+        // Local T&T boards (HTML crawlers, daily; see docs/LOCAL-BOARDS.md)
+        App\Services\JobSources\CaribbeanJobsSource::class,
+        App\Services\JobSources\JobsTtSource::class,
+        App\Services\JobSources\EmployTtSource::class,
     ],
 
     /*
@@ -38,6 +41,9 @@ return [
         'himalayas' => ['label' => 'Himalayas', 'url' => 'https://himalayas.app'],
         'remoteok' => ['label' => 'Remote OK', 'url' => 'https://remoteok.com'],
         'arbeitnow' => ['label' => 'Arbeitnow', 'url' => 'https://www.arbeitnow.com'],
+        'caribbeanjobs' => ['label' => 'CaribbeanJobs.com', 'url' => 'https://www.caribbeanjobs.com'],
+        'jobstt' => ['label' => 'JobsTT', 'url' => 'https://www.jobstt.com'],
+        'employtt' => ['label' => 'EmployTT (Government of T&T)', 'url' => 'https://employtt.gov.tt'],
     ],
 
     /*
@@ -122,6 +128,33 @@ return [
                 'url' => 'https://www.arbeitnow.com/api/job-board-api',
                 'max_pages' => 3,
                 'min_interval_minutes' => 60,
+            ],
+
+            // ── Local T&T boards: HTML crawlers, once a day ──────────
+            // robots.txt is checked before every fetch; see each adapter's
+            // docblock and docs/LOCAL-BOARDS.md for the terms read on
+            // 2026-09-03 and why two of the three are off by default.
+            'caribbeanjobs' => [
+                'enabled' => (bool) env('JOBSOURCE_CARIBBEANJOBS', true),
+                'url' => 'https://www.caribbeanjobs.com/ShowResults.aspx?Location=124',
+                'max_pages' => (int) env('JOBSOURCE_CARIBBEANJOBS_PAGES', 4), // 25 listings per page
+                'min_interval_minutes' => 1440,
+                'delay_ms' => 1500,
+            ],
+            'jobstt' => [
+                'enabled' => (bool) env('JOBSOURCE_JOBSTT', false), // terms forbid robots/aggregation — permission needed
+                'url' => 'https://www.jobstt.com/job',
+                'max_pages' => (int) env('JOBSOURCE_JOBSTT_PAGES', 3),
+                'fetch_details' => true,
+                'min_interval_minutes' => 1440,
+                'delay_ms' => 1500,
+            ],
+            'employtt' => [
+                'enabled' => (bool) env('JOBSOURCE_EMPLOYTT', false), // terms require iGovTT's written permission
+                'url' => 'https://employtt.gov.tt/jobs/list',
+                'fetch_details' => true,
+                'min_interval_minutes' => 1440,
+                'delay_ms' => 1500,
             ],
         ],
 

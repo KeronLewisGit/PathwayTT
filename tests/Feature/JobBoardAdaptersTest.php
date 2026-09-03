@@ -7,7 +7,6 @@ use App\Models\JobSyncRun;
 use App\Services\JobSources\ArbeitnowSource;
 use App\Services\JobSources\HimalayasSource;
 use App\Services\JobSources\JobicySource;
-use App\Services\JobSources\LocalBoardSource;
 use App\Services\JobSources\RemoteOkSource;
 use App\Services\JobSources\RemotiveSource;
 use Database\Seeders\IndustrySeeder;
@@ -216,7 +215,7 @@ test('board errors are recorded per source without aborting the sync', function 
         ->and($runs['jobicy']->error)->toBeNull()
         ->and($runs['jobicy']->notes)->toContain('skipped')
         ->and($runs['himalayas']->created_count)->toBe(2)
-        ->and($runs->has('local_boards'))->toBeFalse(); // stub is disabled
+        ->and($runs->has('jobstt'))->toBeFalse(); // disabled sources never run
 
     $listing = JobListing::query()->where('source', 'himalayas')->firstOrFail();
     expect($listing->work_arrangement->value)->toBe('remote_international')
@@ -233,10 +232,3 @@ test('board errors are recorded per source without aborting the sync', function 
     expect(JobListing::query()->where('source', 'himalayas')->count())->toBe(2);
 });
 
-test('the local board source is a documented stub that never runs', function () {
-    $stub = new LocalBoardSource;
-
-    expect($stub->enabled())->toBeFalse()
-        ->and(iterator_to_array($stub->fetch()))->toBe([])
-        ->and($stub->notes())->toContain('no public API');
-});
