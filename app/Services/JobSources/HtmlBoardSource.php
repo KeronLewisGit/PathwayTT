@@ -104,7 +104,8 @@ abstract class HtmlBoardSource extends RemoteBoardSource
             try {
                 $date = Carbon::createFromFormat($format, trim($text), config('app.display_timezone'));
                 if ($date !== false) {
-                    return $date->utc()->toDateTimeString();
+                    // Boards give dates, not times: pin to the start of that day (AST).
+                    return $date->startOfDay()->utc()->toDateTimeString();
                 }
             } catch (\Throwable) {
                 // try next format

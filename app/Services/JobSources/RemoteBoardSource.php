@@ -130,10 +130,13 @@ abstract class RemoteBoardSource implements JobSourceInterface
             return false;
         }
 
+        // Only a run that actually brought listings back starts the window;
+        // an empty run (robots block, parser drift, outage) may retry sooner.
         return JobSyncRun::query()
             ->where('source', $this->key())
             ->whereNull('error')
             ->whereNotNull('finished_at')
+            ->where('fetched_count', '>', 0)
             ->where('finished_at', '>', now()->subMinutes($minutes))
             ->exists();
     }
