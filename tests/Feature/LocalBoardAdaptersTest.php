@@ -203,7 +203,16 @@ test('local-board titles classify into T&T industries and employment types', fun
         'Server Administrator' => 'ict-software',
         'Restaurant Server' => 'tourism-hospitality',
         'Offshore Rig Electrician' => 'energy-petrochemicals',
-        'Security Officer' => null,
+        'Security Officer' => 'professional-services-accountinglegalconsulting', // generic last resort
+        'Country Manager' => 'professional-services-accountinglegalconsulting',
+        'Collections Supervisor' => 'financial-services-insurance',
+        'Porter - The Naughty Grape Duty Free' => 'logistics-shipping',
+        'Shift Lead- Mixologist - Bar (Trinidad) Airport' => 'tourism-hospitality',
+        'Developer, Business Intelligence' => 'ict-software',
+        'API INSPECTOR' => 'energy-petrochemicals',
+        'Facilities Repair Technician' => 'construction',
+        'Quality Assurance Technician' => 'manufacturing',
+        'Optometrist (Locum) (Direct To Client)' => 'healthcare',
     ];
 
     foreach ($cases as $title => $expected) {
@@ -221,7 +230,7 @@ test('local-board titles classify into T&T industries and employment types', fun
 test('jobs:reclassify-local back-fills industry and employment type on old local rows', function () {
     $this->seed(IndustrySeeder::class);
     $a = JobListing::factory()->bare()->create(['source' => 'caribbeanjobs', 'source_job_id' => 'r1', 'title' => 'Senior Officer Platform Engineering', 'industry_id' => null, 'employment_type' => null]);
-    $b = JobListing::factory()->bare()->create(['source' => 'caribbeanjobs', 'source_job_id' => 'r2', 'title' => 'Temporary Administrative Assistant', 'industry_id' => null, 'employment_type' => null]);
+    $b = JobListing::factory()->bare()->create(['source' => 'caribbeanjobs', 'source_job_id' => 'r2', 'title' => "T\u{200B}emporary A\u{200B}dministrative Assistant", 'industry_id' => null, 'employment_type' => null]); // crawled before the zero-width-space fix
     $remote = JobListing::factory()->bare()->create(['source' => 'himalayas', 'source_job_id' => 'r3', 'title' => 'Registered Nurse', 'industry_id' => null]);
 
     $this->artisan('jobs:reclassify-local')->expectsOutputToContain('Reclassified 2 listing(s).')->assertSuccessful();
@@ -229,6 +238,7 @@ test('jobs:reclassify-local back-fills industry and employment type on old local
     expect($a->fresh()->industry->slug)->toBe('ict-software')
         ->and($b->fresh()->industry->slug)->toBe('professional-services-accountinglegalconsulting')
         ->and($b->fresh()->employment_type?->value)->toBe('temporary')
+        ->and($b->fresh()->title)->toBe('Temporary Administrative Assistant') // invisible characters removed
         ->and($remote->fresh()->industry_id)->toBeNull(); // remote boards are not touched
 });
 

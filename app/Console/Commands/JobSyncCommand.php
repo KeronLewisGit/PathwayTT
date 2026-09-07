@@ -7,6 +7,7 @@ use App\Models\JobSyncRun;
 use App\Services\JobSources\JobIngestor;
 use App\Services\JobSources\JobSourceInterface;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Artisan;
 use Throwable;
 
 class JobSyncCommand extends Command
@@ -98,6 +99,15 @@ class JobSyncCommand extends Command
             }
 
             $changed += $created + $updated;
+        }
+
+        // Local-board rows that predate title classification (or carry the old
+        // zero-width-space titles) are back-filled on every run, so the Jobs
+        // page never depends on someone remembering a one-off command.
+        Artisan::call('jobs:reclassify-local');
+        if (preg_match('/Reclassified (\d+)/', Artisan::output(), $m) && (int) $m[1] > 0) {
+            $this->line("Back-filled industry/employment type on {$m[1]} local listing(s).");
+            $changed += (int) $m[1];
         }
 
         // New or changed listings invalidate every user's ranking: fan out a

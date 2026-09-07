@@ -61,21 +61,25 @@ return [
     */
 
     'title_industry_patterns' => [
-        'public-sector' => '/\b(ministry|government|public service|municipal|regional corporation|statutory|police|defence|customs officer|immigration)\b/',
-        'ict-software' => '/\b(software|developer|programmer|devops|data (?:analyst|scientist|engineer)|database|network|system\w* (?:administrator|analyst|engineer)|server (?:administrator|engineer)|it (?:support|officer|technician|manager)|information technology|cyber\w*|cloud|web|front-?end|back-?end|full-?stack|platform engineer\w*|sre|qa engineer|tester|ict|help ?desk technician|erp|sap|business analyst|scrum|product manager|ui|ux)\b/',
-        'healthcare' => '/\b(nurse|nursing|medical|clinic\w*|pharmac\w*|dental|dentist|physician|doctor|health|caregiver|lab technologist|phlebotom\w*|radiograph\w*|physiotherap\w*)\b/',
-        'education' => '/\b(teacher|teaching|tutor|lecturer|instructor|educat\w*|school|curriculum|trainer)\b/',
-        'energy-petrochemicals' => '/\b(petrochem\w*|oil|gas|refiner\w*|drilling|offshore|onshore|rig|pipeline|wellsite|well site|petroleum|lng|upstream|downstream|hse|energy|instrumentation)\b/',
-        'construction' => '/\b(construction|civil|carpenter|mason|electrician|plumber|welder|pipefitter|site supervisor|quantity surveyor|surveyor|architect\w*|hvac|scaffold\w*|crane|foreman|estimator|draught\w*|drafts\w*|project engineer)\b/',
-        'logistics-shipping' => '/\b(logistic\w*|supply chain|shipping|warehouse|freight|courier|driver|dispatch\w*|fleet|forklift|port operations|customs broker\w*|inventory)\b/',
-        'bpo-contact-centre' => '/\b(call cent\w*|contact cent\w*|customer (?:service|support|care|experience)|telemarket\w*|help ?desk|bpo)\b/',
-        'professional-services-accountinglegalconsulting' => '/\b(accountant|accounting|accounts|audit\w*|bookkeep\w*|legal|attorney|lawyer|paralegal|counsel|human resource\w*|hr|recruit\w*|consultant|consulting|payroll|compliance|administrative|administrator|admin|secretary|receptionist|clerk|office assistant|executive assistant|procurement|purchasing|project manager|operations manager)\b/',
-        'financial-services-insurance' => '/\b(bank\w*|insurance|underwrit\w*|actuar\w*|credit|loan\w*|teller|financial advis\w*|investment|treasury|claims)\b/',
-        'creative-media' => '/\b(graphic|design\w*|writer|copywrit\w*|content|creative|marketing|media|video|photograph\w*|brand\w*|social media|communications officer|public relations|journalist|editor)\b/',
-        'distribution-retail' => '/\b(sales|merchandis\w*|cashier|retail|store|shop|showroom|business development|account executive|distribution|wholesale|buyer)\b/',
-        'manufacturing' => '/\b(manufactur\w*|production|machine operator|machinist|factory|plant|assembly|quality control|qc|maintenance technician|mechanic\w*|technician|fabricat\w*|packag\w*|line operator|process operator)\b/',
-        'tourism-hospitality' => '/\b(hotel|resort|restaurant|barista|chef|cook|kitchen|waiter|waitress|server|bartender|housekeep\w*|front desk|concierge|hospitality|tour\w*|travel|guest services|steward\w*|food (?:and|&) beverage|f&b|catering)\b/',
-        'agriculture-agro-processing' => '/\b(agricultur\w*|farm\w*|agro\w*|crop|livestock|veterinar\w*|fisher\w*|estate)\b/',
+        ['public-sector', '/\b(ministry|government|public service|municipal|regional corporation|statutory|police|defence|customs officer|immigration)\b/'],
+        ['ict-software', '/\b(software|developer|programmer|devops|data (?:analyst|scientist|engineer)|database|network|system\w* (?:administrator|analyst|engineer|support)|server (?:administrator|engineer)|it (?:support|officer|technician|manager|audit\w*)|information technology|cyber\w*|cloud|web|front-?end|back-?end|full-?stack|platform engineer\w*|sre|qa engineer|tester|ict|help ?desk technician|erp|sap|business (?:analyst|intelligence)|scrum|product manager|ui|ux)\b/'],
+        ['healthcare', '/\b(nurse|nursing|medical|clinic\w*|pharmac\w*|dental|dentist|physician|doctor|health|caregiver|lab technologist|phlebotom\w*|radiograph\w*|physiotherap\w*|optometr\w*|locum|therapist|dietitian)\b/'],
+        ['education', '/\b(teacher|teaching|tutor|lecturer|instructor|educat\w*|school|curriculum|trainer)\b/'],
+        ['energy-petrochemicals', '/\b(petrochem\w*|oil|gas|refiner\w*|drilling|offshore|onshore|rig|pipeline|wellsite|well site|petroleum|lng|upstream|downstream|hse|energy|instrumentation|api inspector|coatings? inspector|corrosion|ndt)\b/'],
+        ['construction', '/\b(construction|civil|carpenter|mason|electrician|plumber|welder|pipefitter|site supervisor|quantity surveyor|surveyor|architect\w*|hvac|scaffold\w*|crane|foreman|estimator|draught\w*|drafts\w*|project engineer|facilit\w*)\b/'],
+        ['logistics-shipping', '/\b(logistic\w*|supply chain|shipping|warehouse|freight|courier|driver|dispatch\w*|fleet|forklift|port operations|customs broker\w*|inventory|commissary|porter)\b/'],
+        ['bpo-contact-centre', '/\b(call cent\w*|contact cent\w*|customer (?:service|support|care|experience)|telemarket\w*|tele-?(?:sales|collector)|help ?desk|bpo)\b/'],
+        ['tourism-hospitality', '/\b(hotel|resort|restaurant|barista|chef|cook|kitchen|waiter|waitress|bartender|mixologist|bar|housekeep\w*|front desk|concierge|hospitality|tour\w*|travel|guest services|steward\w*|food (?:and|&) beverage|f&b|catering|duty free)\b/'],
+        ['professional-services-accountinglegalconsulting', '/\b(accountant|accounting|accounts|audit\w*|bookkeep\w*|legal|attorney|lawyer|paralegal|counsel|human resource\w*|hr|recruit\w*|consultant|consulting|payroll|compliance|administrative|administrator|admin|administration|secretary|receptionist|clerk|office assistant|executive assistant|procurement|purchasing|project manager|operations manager)\b/'],
+        ['financial-services-insurance', '/\b(bank\w*|insurance|underwrit\w*|actuar\w*|credit|loan\w*|teller|financial (?:advis\w*|analyst|officer)|investment|treasury|claims|collections?|collector|settlement|billing|reconciliation|risk analyst|fp&a|finance)\b/'],
+        ['creative-media', '/\b(graphic|design\w*|writer|copywrit\w*|content|creative|marketing|media|video|photograph\w*|brand\w*|social media|communications officer|public relations|journalist|editor)\b/'],
+        ['distribution-retail', '/\b(sales|salesman|merchandis\w*|cashier|retail|store|shop|showroom|business development|account executive|distribution|wholesale|buyer|tell sell)\b/'],
+        ['manufacturing', '/\b(manufactur\w*|production|machine operator|machinist|factory|plant|assembly|quality (?:control|assurance)|qc|maintenance technician|mechanic\w*|technician|fabricat\w*|packag\w*|line operator|process operator|product development)\b/'],
+        ['agriculture-agro-processing', '/\b(agricultur\w*|farm\w*|agro\w*|crop|livestock|veterinar\w*|fisher\w*|estate)\b/'],
+        // Last resort: generic office/management titles that say nothing about a
+        // sector ("Country Manager", "Operations Assistant") file under professional
+        // services rather than vanishing from every industry-filtered view.
+        ['professional-services-accountinglegalconsulting', '/\b(manager|officer|assistant|coordinator|supervisor|lead|analyst|associate|representative|specialist|executive|operations)\b/'],
     ],
 
     /*

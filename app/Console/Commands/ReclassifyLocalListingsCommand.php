@@ -27,20 +27,27 @@ class ReclassifyLocalListingsCommand extends Command
 
         JobListing::query()
             ->whereIn('source', ['caribbeanjobs', 'trinidadjob', 'jobstt', 'employtt'])
-            ->when(! $this->option('all'), fn ($q) => $q->where(fn ($q) => $q->whereNull('industry_id')->orWhereNull('employment_type')))
+            ->when(! $this->option('all'), fn ($q) => $q->where(fn ($q) => $q->whereNull('industry_id')->orWhereNull('employment_type')->orWhere('title', 'like', "%\u{200B}%")))
             ->chunkById(200, function ($listings) use ($industryIds, &$updated) {
                 foreach ($listings as $listing) {
                     $changes = [];
 
+                    // Titles crawled before the zero-width-space fix still carry the
+                    // invisible characters; clean them here rather than waiting a day.
+                    $cleanTitle = trim(preg_replace('/[\x{200B}-\x{200D}\x{2060}\x{FEFF}\x{00AD}]/u', '', $listing->title));
+                    if ($cleanTitle !== '' && $cleanTitle !== $listing->title) {
+                        $changes['title'] = $cleanTitle;
+                    }
+
                     if ($listing->industry_id === null || $this->option('all')) {
-                        $slug = HtmlBoardSource::industryFromTitle($listing->title, $listing->description);
+                        $slug = HtmlBoardSource::industryFromTitle($cleanTitle, $listing->description);
                         if ($slug !== null && isset($industryIds[$slug]) && $industryIds[$slug] !== $listing->industry_id) {
                             $changes['industry_id'] = $industryIds[$slug];
                         }
                     }
 
                     if ($listing->employment_type === null) {
-                        $type = HtmlBoardSource::employmentFromTitle($listing->title);
+                        $type = HtmlBoardSource::employmentFromTitle($cleanTitle);
                         if ($type !== null) {
                             $changes['employment_type'] = $type;
                         }

@@ -82,7 +82,7 @@ abstract class HtmlBoardSource extends RemoteBoardSource
             if ($haystack === '') {
                 continue;
             }
-            foreach ($patterns as $slug => $pattern) {
+            foreach ($patterns as [$slug, $pattern]) {
                 if (preg_match($pattern, $haystack)) {
                     return $slug;
                 }
