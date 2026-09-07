@@ -217,3 +217,17 @@ test('local-board titles classify into T&T industries and employment types', fun
         ->and($employment->invoke(null, 'Permanent Driver'))->toBe('permanent')
         ->and($employment->invoke(null, 'Accountant'))->toBeNull();
 });
+
+test('jobs:reclassify-local back-fills industry and employment type on old local rows', function () {
+    $this->seed(IndustrySeeder::class);
+    $a = JobListing::factory()->bare()->create(['source' => 'caribbeanjobs', 'source_job_id' => 'r1', 'title' => 'Senior Officer Platform Engineering', 'industry_id' => null, 'employment_type' => null]);
+    $b = JobListing::factory()->bare()->create(['source' => 'caribbeanjobs', 'source_job_id' => 'r2', 'title' => 'Temporary Administrative Assistant', 'industry_id' => null, 'employment_type' => null]);
+    $remote = JobListing::factory()->bare()->create(['source' => 'himalayas', 'source_job_id' => 'r3', 'title' => 'Registered Nurse', 'industry_id' => null]);
+
+    $this->artisan('jobs:reclassify-local')->expectsOutputToContain('Reclassified 2 listing(s).')->assertSuccessful();
+
+    expect($a->fresh()->industry->slug)->toBe('ict-software')
+        ->and($b->fresh()->industry->slug)->toBe('professional-services-accountinglegalconsulting')
+        ->and($b->fresh()->employment_type?->value)->toBe('temporary')
+        ->and($remote->fresh()->industry_id)->toBeNull(); // remote boards are not touched
+});
