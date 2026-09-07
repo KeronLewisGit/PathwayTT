@@ -7,6 +7,7 @@ use App\Models\JobMatch;
 use App\Models\SkillGapPlan;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
+use Throwable;
 
 /**
  * The Skills Gap Plan page: latest persisted plan with live progress
@@ -16,6 +17,9 @@ class SkillGapPlanView extends Component
 {
     /** Unix timestamp of the last generate request, to drive the polling state. */
     public ?int $requestedAt = null;
+
+    /** Set when an inline generation failed, so the page explains instead of spinning forever. */
+    public ?string $generateError = null;
 
     public function mount(): void
     {
@@ -28,8 +32,27 @@ class SkillGapPlanView extends Component
 
     public function generate(): void
     {
-        GenerateSkillGapPlanJob::dispatch((int) Auth::id());
-        $this->requestedAt = now()->timestamp;
+        $this->generateError = null;
+        $userId = (int) Auth::id();
+
+        if (! config('advisory.generate_inline')) {
+            GenerateSkillGapPlanJob::dispatch($userId);
+            $this->requestedAt = now()->timestamp;
+
+            return;
+        }
+
+        // Shared hosting drains the queue only once a minute (if cron is healthy at
+        // all), so build the plan inside this request: a few seconds, and the user
+        // sees the result immediately instead of a spinner that depends on cron.
+        try {
+            app()->call([new GenerateSkillGapPlanJob($userId), 'handle']);
+        } catch (Throwable $e) {
+            report($e);
+            $this->generateError = 'We could not build your plan just now. Please try again in a moment.';
+        }
+
+        $this->requestedAt = null;
     }
 
     public function render()

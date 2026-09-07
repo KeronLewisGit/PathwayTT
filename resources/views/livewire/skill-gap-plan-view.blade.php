@@ -19,6 +19,8 @@
                 @if (! empty($payload['scope']['widened']))
                     <span class="text-amber-700">(too few in your preferred scope, so all open listings were used)</span>
                 @endif
+            @elseif ($generateError)
+                <span class="text-red-700">{{ $generateError }}</span>
             @elseif (! $hasProfile)
                 No profile yet.
             @else
@@ -27,8 +29,13 @@
         </div>
 
         <div class="flex items-center gap-4">
-            <button type="button" wire:click="generate" @if ($generating) disabled @endif class="btn-secondary btn-sm">Regenerate</button>
-            <a href="{{ route('plan.pdf') }}" class="link">Download PDF</a>
+            <button type="button" wire:click="generate" wire:loading.attr="disabled" @if ($generating) disabled @endif class="btn-secondary btn-sm">
+                <span wire:loading.remove wire:target="generate">{{ $plan ? 'Regenerate' : 'Generate plan' }}</span>
+                <span wire:loading wire:target="generate">Building…</span>
+            </button>
+            @if ($plan)
+                <a href="{{ route('plan.pdf') }}" class="link">Download PDF</a>
+            @endif
             <a href="{{ route('matches.index') }}" class="link">Back to matches</a>
         </div>
     </div>

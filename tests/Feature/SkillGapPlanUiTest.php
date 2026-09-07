@@ -88,6 +88,7 @@ test('gaps are marked done and progress shown once the user adds the skill', fun
 });
 
 test('regenerating creates a new plan version and keeps history', function () {
+    config(['advisory.generate_inline' => false]);
     Queue::fake();
     $skill = Skill::factory()->create();
     $user = planUser();
@@ -117,4 +118,22 @@ test('users without a profile are pointed to the resume upload instead of an emp
     $this->get('/plan'); // still authed; page is protected by the group middleware
     auth()->logout();
     $this->get('/plan')->assertRedirect('/login');
+});
+
+test('the first visit builds the plan inline so the page opens with results', function () {
+    Queue::fake();
+    $skill = Skill::factory()->create();
+    $user = planUser();
+    planListing('Role', [$skill->id]);
+
+    expect($user->skillGapPlans()->exists())->toBeFalse();
+
+    Livewire::actingAs($user)
+        ->test(SkillGapPlanView::class)
+        ->assertSee('Plan generated')
+        ->assertSee('Download PDF')
+        ->assertDontSee('Building your plan');
+
+    expect($user->skillGapPlans()->count())->toBe(1);
+    Queue::assertNotPushed(GenerateSkillGapPlanJob::class);
 });

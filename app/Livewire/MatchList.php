@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
+use Throwable;
 
 /**
  * Ranked matches (spec step 5). Every row shows the score, a plain-English
@@ -31,16 +32,46 @@ class MatchList extends Component
     {
         $user = Auth::user();
 
-        // First visit: kick off the initial compute so the poll has something to wait for.
+        // First visit: compute now so the page opens with scores rather than a poll.
         if ($user->profile()->exists() && ! $user->jobMatches()->exists()) {
-            RecomputeUserMatchesJob::dispatch($user->id);
+            $this->runRecompute((int) $user->id);
         }
     }
 
     public function recompute(): void
     {
-        RecomputeUserMatchesJob::dispatch(Auth::id());
-        session()->flash('matches-recompute', 'Recomputing your matches — this takes a few seconds.');
+        session()->flash(
+            'matches-recompute',
+            $this->runRecompute((int) Auth::id())
+                ? 'Your matches have been recomputed.'
+                : 'Recomputing your matches — this takes a minute.',
+        );
+    }
+
+    /**
+     * Scores every open listing for the user. Inline by default: a few hundred
+     * listings take a couple of seconds, and on shared hosting the queue is only
+     * drained once a minute by cron. Returns true when the scores are already
+     * fresh, false when the work was queued or failed and the poll should wait.
+     */
+    private function runRecompute(int $userId): bool
+    {
+        if (! config('matching.recompute_inline')) {
+            RecomputeUserMatchesJob::dispatch($userId);
+
+            return false;
+        }
+
+        try {
+            app()->call([new RecomputeUserMatchesJob($userId), 'handle']);
+
+            return true;
+        } catch (Throwable $e) {
+            report($e);
+            RecomputeUserMatchesJob::dispatch($userId);
+
+            return false;
+        }
     }
 
     public function render(SettingsService $settings, SalaryFormatter $salary)

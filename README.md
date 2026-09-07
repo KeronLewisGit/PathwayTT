@@ -70,6 +70,7 @@ Windows/Laragon users: PHP needs a CA bundle for the job-board adapters —
 | `QUEUE_VIA_SCHEDULER` | `true` on shared hosting: `schedule:run` drains the queue each minute. `false` with a real worker. |
 | `RESUME_PARSER_DRIVER` | `rule` (default, no key) or `llm`. |
 | `RESUME_PARSE_INLINE` | `true` (default): parse during the upload request so the review screen is ready instantly. `false`: queue it for the worker. |
+| `MATCHING_RECOMPUTE_INLINE`, `ADVISORY_GENERATE_INLINE` | `true` (default): score matches / build the Skills Gap Plan inside the page request. `false`: queue and poll. |
 | `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL` | Used only when the driver is `llm`. Falls back to `rule` on any error. |
 | `JOBSOURCE_*` | Enable/disable each remote board; per-run cap; whether to import listings closed to T&T. |
 

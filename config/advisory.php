@@ -12,6 +12,10 @@
 
 return [
 
+    // Build the plan inside the page request (instant; right for shared hosting where
+    // cron drains the queue once a minute). false = queue GenerateSkillGapPlanJob.
+    'generate_inline' => (bool) env('ADVISORY_GENERATE_INLINE', true),
+
     // How many candidate gaps get the full what-if re-scoring.
     'max_gaps' => 12,
 

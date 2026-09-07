@@ -13,6 +13,11 @@
 
 return [
 
+    // Score matches inside the Matches page request on first visit and on "Recompute"
+    // (instant; right for shared hosting where cron drains the queue once a minute).
+    // false = queue RecomputeUserMatchesJob and poll.
+    'recompute_inline' => (bool) env('MATCHING_RECOMPUTE_INLINE', true),
+
     // Component weights for the 0-100 match score.
     'weights' => [
         'required_skills' => 35, // Required skills coverage

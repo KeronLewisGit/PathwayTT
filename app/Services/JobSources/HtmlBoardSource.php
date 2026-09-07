@@ -74,7 +74,13 @@ abstract class HtmlBoardSource extends RemoteBoardSource
         if ($found->count() === 0) {
             return null;
         }
-        $text = trim(preg_replace('/\s+/', ' ', html_entity_decode($found->first()->text(''), ENT_QUOTES | ENT_HTML5)));
+        $text = html_entity_decode($found->first()->text(''), ENT_QUOTES | ENT_HTML5);
+
+        // Some boards (CaribbeanJobs) interleave zero-width spaces between the
+        // letters of titles as an anti-scraping measure. Left in, they break
+        // search, skill detection and de-duplication while looking normal on screen.
+        $text = preg_replace('/[\x{200B}-\x{200D}\x{2060}\x{FEFF}\x{00AD}]/u', '', $text);
+        $text = trim(preg_replace('/\s+/u', ' ', $text));
 
         return $text === '' ? null : $text;
     }
