@@ -132,13 +132,10 @@ php artisan optimize
 php artisan mail:test you@example.com   # confirm SMTP works (skip if MAIL_MAILER=log)
 ```
 
-Create the first admin:
+Create the first admin (edit the email and password first, then paste as one command):
 
 ```bash
-php artisan tinker
->>> $u = App\Models\User::create(['name' => 'Admin', 'email' => 'you@example.com', 'password' => 'choose-a-strong-password']);
->>> $u->forceFill(['is_admin' => true, 'email_verified_at' => now()])->save();
->>> exit
+php artisan tinker --execute="\$u = App\Models\User::create(['name' => 'Admin', 'email' => 'you@example.com', 'password' => 'choose-a-strong-password']); \$u->forceFill(['is_admin' => true, 'email_verified_at' => now()])->save(); echo 'Admin created';"
 ```
 
 Log in at `https://blue-snake-221127.hostingersite.com/pathwaytt/admin`, open
