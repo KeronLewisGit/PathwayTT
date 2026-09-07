@@ -11,7 +11,8 @@ This guide is written for the current install:
 | Site           | `blue-snake-221127.hostingersite.com`                                       |
 | App folder     | `domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt`         |
 | App URL        | `https://blue-snake-221127.hostingersite.com/pathwaytt`                     |
-| `USERNAME`     | your Hostinger account user, looks like `u123456789` (run `whoami` over SSH) |
+| SSH user       | `u269010508`                                                                |
+| PHP (CLI)      | `/opt/alt/php83/usr/bin/php` — the plain `php` command is 8.2 and will not run the app |
 
 When you later move to a real domain, replace the site name throughout. If the app is
 moved to the domain root instead of a subfolder, nothing in the bundle changes; only
@@ -52,14 +53,25 @@ and tests, adds the root `.htaccess`, and writes `dist\pathwaytt-<version>.zip` 
    - *PHP extensions* tab: make sure `intl`, `gd`, `exif`, `zip`, `fileinfo`, `dom`,
      `mbstring`, `pdo_mysql`, `curl`, `openssl` are ticked (most are on by default).
 2. **Databases → Management → Create new MySQL database.** Note the database name, user and
-   password. Hostinger prefixes both name and user with `USERNAME_`, e.g.
-   `u123456789_pathwaytt`. The host is `localhost`.
+   password. Hostinger prefixes both name and user with `u269010508_`, e.g.
+   `u269010508_pathwaytt`. The host is `localhost`.
 3. **Emails.** Create a mailbox (used for verification and password-reset mail) and note
    its password. On the temporary `hostingersite.com` domain you may not be able to create
    one; in that case keep `MAIL_MAILER=log` for now and read verification links from
    `storage/logs/laravel.log`, or set `REQUIRE_EMAIL_VERIFICATION=false` (the default).
-4. **Advanced → SSH Access.** Enable, and note host, port and username. Connect with
-   PowerShell: `ssh -p PORT USERNAME@HOST`.
+4. **Advanced → SSH Access.** Enable, and note host and port. Connect with PowerShell:
+   `ssh -p PORT u269010508@HOST`.
+5. **PHP on the command line.** The `php` command over SSH is 8.2, and the app needs 8.3.
+   Every `php artisan` command in this guide therefore uses the full 8.3 binary path. At the
+   start of each SSH session run:
+
+   ```bash
+   alias php=/opt/alt/php83/usr/bin/php
+   php -v        # must print PHP 8.3.x
+   ```
+
+   If that path does not exist, find the 8.3 binary with `ls /opt/alt/ | grep php`,
+   `ls /usr/local/bin /usr/bin | grep -i php` and use that path instead.
 
 ## 3. Upload and extract
 
@@ -74,6 +86,7 @@ and tests, adds the root `.htaccess`, and writes `dist\pathwaytt-<version>.zip` 
 ## 4. Configure the app
 
 ```bash
+alias php=/opt/alt/php83/usr/bin/php
 cd ~/domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt
 cp .env.example .env
 nano .env
@@ -86,8 +99,8 @@ APP_ENV=production
 APP_DEBUG=false
 APP_URL=https://blue-snake-221127.hostingersite.com/pathwaytt
 
-DB_DATABASE=USERNAME_pathwaytt
-DB_USERNAME=USERNAME_pathwaytt
+DB_DATABASE=u269010508_pathwaytt
+DB_USERNAME=u269010508_pathwaytt
 DB_PASSWORD=the-database-password
 
 MAIL_MAILER=smtp
@@ -119,9 +132,6 @@ php artisan optimize
 php artisan mail:test you@example.com   # confirm SMTP works (skip if MAIL_MAILER=log)
 ```
 
-If `php -v` is not 8.3, use the full path instead, e.g. `/opt/alt/php83/usr/bin/php`
-(`ls /opt/alt/ | grep php` shows what is installed).
-
 Create the first admin:
 
 ```bash
@@ -140,10 +150,10 @@ Log in at `https://blue-snake-221127.hostingersite.com/pathwaytt/admin`, open
 enter the command:
 
 ```
-/usr/bin/php /home/USERNAME/domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt/artisan schedule:run >> /dev/null 2>&1
+/opt/alt/php83/usr/bin/php /home/u269010508/domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt/artisan schedule:run >> /dev/null 2>&1
 ```
 
-Use the same PHP binary path that worked in step 4. This one entry drains the job queue
+Cron does not read your alias, so the full 8.3 path is required here. This one entry drains the job queue
 each minute (resume parsing, match recomputation, gap plans) and runs the hourly job-board
 sync. Nothing else needs to run in the background.
 
@@ -173,6 +183,7 @@ On Hostinger:
 2. Over SSH:
 
 ```bash
+alias php=/opt/alt/php83/usr/bin/php
 cd ~/domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt
 php artisan down
 php artisan migrate --force
