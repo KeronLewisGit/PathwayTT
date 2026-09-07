@@ -1,33 +1,36 @@
 # Deploying PathwayTT to Hostinger shared hosting
 
-Step-by-step for Hostinger's hPanel, following Hostinger's recommended layout: the whole
-project lives inside `public_html`, and a root `.htaccess` routes every request into
-Laravel's `public/` folder. The generic version (cPanel, VPS) is in
-[DEPLOYMENT.md](DEPLOYMENT.md); read that for background on *why* each step exists.
+Step-by-step for Hostinger's hPanel. The project lives **inside** `public_html`, in a
+subfolder, and a root `.htaccess` routes every request into Laravel's `public/` folder.
+The generic version (cPanel, VPS) is in [DEPLOYMENT.md](DEPLOYMENT.md).
+
+This guide is written for the current install:
+
+| Item           | Value                                                                       |
+|----------------|-----------------------------------------------------------------------------|
+| Site           | `blue-snake-221127.hostingersite.com`                                       |
+| App folder     | `domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt`         |
+| App URL        | `https://blue-snake-221127.hostingersite.com/pathwaytt`                     |
+| `USERNAME`     | your Hostinger account user, looks like `u123456789` (run `whoami` over SSH) |
+
+When you later move to a real domain, replace the site name throughout. If the app is
+moved to the domain root instead of a subfolder, nothing in the bundle changes; only
+`APP_URL` and the cron path do.
 
 **Plan requirement:** Premium or Business shared hosting. Both include SSH, Composer and
 cron. Hostinger has no Node, so front-end assets are compiled on your PC and shipped in the
 zip.
 
-Throughout, replace:
+## How the subfolder layout works
 
-| Placeholder  | Meaning                                                              |
-|--------------|----------------------------------------------------------------------|
-| `YOURDOMAIN` | the domain or subdomain, e.g. `pathwaytt.com` or `app.pathwaytt.com` |
-| `USERNAME`   | your Hostinger account user, looks like `u123456789`                 |
-| `~`          | `/home/USERNAME` — run `pwd` after logging in over SSH to confirm    |
-
-## How the layout stays safe
-
-The zip ships a root `.htaccess` (source: `scripts/hostinger.htaccess`) that:
-
-- rewrites every request into `public/`, so only files under `public/` are ever served;
-- returns **403** for direct requests to `.env`, `artisan`, `composer.*`, `app/`,
-  `config/`, `storage/`, `vendor/` and the other internals, as a second line of defence;
-- leaves `/.well-known/` alone so Hostinger's free SSL validation keeps working.
-
-Uploaded resumes live in `storage/app/private` and are served only through the app's
-signed, policy-checked route. They are never reachable by URL.
+- The zip ships a root `.htaccess` (source: `scripts/hostinger.htaccess`) that rewrites
+  every request into `public/`, returns **403** for direct requests to `.env`, `artisan`,
+  `app/`, `config/`, `storage/`, `vendor/` and the other internals, and leaves
+  `/.well-known/` alone for SSL validation.
+- `public/index.php` detects this layout and tells Laravel its base URL is `/pathwaytt`,
+  so routes, redirects, Livewire, Filament and asset links all carry the subfolder.
+- Uploaded resumes live in `storage/app/private` and are served only through the app's
+  signed, policy-checked route. They are never reachable by URL.
 
 ## 1. Build the upload bundle on your PC
 
@@ -51,25 +54,27 @@ and tests, adds the root `.htaccess`, and writes `dist\pathwaytt-<version>.zip` 
 2. **Databases → Management → Create new MySQL database.** Note the database name, user and
    password. Hostinger prefixes both name and user with `USERNAME_`, e.g.
    `u123456789_pathwaytt`. The host is `localhost`.
-3. **Emails.** Create a mailbox such as `hello@YOURDOMAIN` (used for verification and
-   password-reset mail). Note its password.
+3. **Emails.** Create a mailbox (used for verification and password-reset mail) and note
+   its password. On the temporary `hostingersite.com` domain you may not be able to create
+   one; in that case keep `MAIL_MAILER=log` for now and read verification links from
+   `storage/logs/laravel.log`, or set `REQUIRE_EMAIL_VERIFICATION=false` (the default).
 4. **Advanced → SSH Access.** Enable, and note host, port and username. Connect with
    PowerShell: `ssh -p PORT USERNAME@HOST`.
 
-## 3. Upload and extract into public_html
+## 3. Upload and extract
 
-1. **Files → File Manager**, open `domains/YOURDOMAIN/public_html/`.
-2. Delete anything already there (Hostinger's placeholder `default.php` and similar).
-3. Upload `pathwaytt-<version>.zip` into `public_html`.
-4. Right-click the zip → **Extract** → extract **here** (into `public_html` itself, not a
-   subfolder). You should end up with `public_html/artisan`, `public_html/public/` and
-   `public_html/.htaccess` (turn on *Show hidden files* in the File Manager to see it).
+1. **Files → File Manager**, open `domains/blue-snake-221127.hostingersite.com/public_html/`.
+2. Create a folder named **`pathwaytt`** and open it.
+3. Upload `pathwaytt-<version>.zip` into that folder.
+4. Right-click the zip → **Extract** → extract **here** (into `pathwaytt` itself, not a
+   further subfolder). You should end up with `pathwaytt/artisan`, `pathwaytt/public/`
+   and `pathwaytt/.htaccess` (turn on *Show hidden files* to see it).
 5. Delete the zip.
 
 ## 4. Configure the app
 
 ```bash
-cd ~/domains/YOURDOMAIN/public_html
+cd ~/domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt
 cp .env.example .env
 nano .env
 ```
@@ -79,7 +84,7 @@ Change these lines (leave the rest as in the example):
 ```
 APP_ENV=production
 APP_DEBUG=false
-APP_URL=https://YOURDOMAIN
+APP_URL=https://blue-snake-221127.hostingersite.com/pathwaytt
 
 DB_DATABASE=USERNAME_pathwaytt
 DB_USERNAME=USERNAME_pathwaytt
@@ -89,16 +94,18 @@ MAIL_MAILER=smtp
 MAIL_SCHEME=smtps
 MAIL_HOST=smtp.hostinger.com
 MAIL_PORT=465
-MAIL_USERNAME=hello@YOURDOMAIN
+MAIL_USERNAME=the-mailbox-address
 MAIL_PASSWORD=the-mailbox-password
-MAIL_FROM_ADDRESS="hello@YOURDOMAIN"
+MAIL_FROM_ADDRESS="the-mailbox-address"
 
 QUEUE_CONNECTION=database
 QUEUE_VIA_SCHEDULER=true
 ```
 
-Optional: `RESUME_PARSER_DRIVER=llm` plus `ANTHROPIC_API_KEY=` for LLM resume parsing;
-`JOBSOURCE_*` toggles for which boards to crawl. Save with `Ctrl+O`, `Enter`, `Ctrl+X`.
+`APP_URL` **must** include `/pathwaytt`: it is what emails and queued jobs use to build
+links. Optional: `RESUME_PARSER_DRIVER=llm` plus `ANTHROPIC_API_KEY=` for LLM resume
+parsing; `JOBSOURCE_*` toggles for which boards to crawl. Save with `Ctrl+O`, `Enter`,
+`Ctrl+X`.
 
 Then:
 
@@ -109,7 +116,7 @@ php artisan db:seed --force        # industries, skills, learning resources, set
 php artisan storage:link
 chmod -R 775 storage bootstrap/cache
 php artisan optimize
-php artisan mail:test you@example.com   # confirm SMTP works
+php artisan mail:test you@example.com   # confirm SMTP works (skip if MAIL_MAILER=log)
 ```
 
 If `php -v` is not 8.3, use the full path instead, e.g. `/opt/alt/php83/usr/bin/php`
@@ -119,12 +126,13 @@ Create the first admin:
 
 ```bash
 php artisan tinker
->>> $u = App\Models\User::create(['name' => 'Admin', 'email' => 'you@YOURDOMAIN', 'password' => 'choose-a-strong-password']);
+>>> $u = App\Models\User::create(['name' => 'Admin', 'email' => 'you@example.com', 'password' => 'choose-a-strong-password']);
 >>> $u->forceFill(['is_admin' => true, 'email_verified_at' => now()])->save();
 >>> exit
 ```
 
-Log in, open **Admin → Settings → Matching & FX**, and set the real TTD/USD rate.
+Log in at `https://blue-snake-221127.hostingersite.com/pathwaytt/admin`, open
+**Settings → Matching & FX**, and set the real TTD/USD rate.
 
 ## 5. Cron — the whole background system
 
@@ -132,7 +140,7 @@ Log in, open **Admin → Settings → Matching & FX**, and set the real TTD/USD 
 enter the command:
 
 ```
-/usr/bin/php /home/USERNAME/domains/YOURDOMAIN/public_html/artisan schedule:run >> /dev/null 2>&1
+/usr/bin/php /home/USERNAME/domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt/artisan schedule:run >> /dev/null 2>&1
 ```
 
 Use the same PHP binary path that worked in step 4. This one entry drains the job queue
@@ -141,17 +149,18 @@ sync. Nothing else needs to run in the background.
 
 ## 6. Verify
 
-- `https://YOURDOMAIN/up` returns 200.
-- `https://YOURDOMAIN/.env` and `https://YOURDOMAIN/storage/` return **403** (the root
-  `.htaccess` is active). If they return the file, the `.htaccess` was not extracted —
-  re-upload `scripts/hostinger.htaccess` as `public_html/.htaccess`.
-- Register a test account; the verification email arrives.
+- `https://blue-snake-221127.hostingersite.com/pathwaytt/up` returns 200.
+- `https://blue-snake-221127.hostingersite.com/pathwaytt/.env` and `.../pathwaytt/storage/`
+  return **403** (the root `.htaccess` is active). If either returns the file, the
+  `.htaccess` was not extracted — re-upload `scripts/hostinger.htaccess` as
+  `pathwaytt/.htaccess`.
+- The home page loads with styling (assets resolve under `/pathwaytt/build/`).
+- Register a test account; the verification email arrives (or appears in
+  `storage/logs/laravel.log` when `MAIL_MAILER=log`).
 - Upload a resume; within a minute the profile review screen fills in (cron works).
 - **Admin → Jobs → Job sync → Run sync now** imports listings and the run rows show
   notes, not errors. `cURL error 60` means PHP has no CA bundle: set `curl.cainfo` in
   PHP options or ask Hostinger support.
-- Hostinger enables a free SSL certificate automatically; if the site shows as insecure,
-  **Security → SSL → Install**.
 
 ## 7. Updating to a new version
 
@@ -159,12 +168,12 @@ On your PC: `powershell -ExecutionPolicy Bypass -File scripts\build-hostinger.ps
 
 On Hostinger:
 
-1. Upload the new zip into `public_html` and extract it **here**, overwriting when asked.
-   `.env` and `storage/app/private` are not in the zip, so they survive.
+1. Upload the new zip into `public_html/pathwaytt` and extract it **here**, overwriting
+   when asked. `.env` and `storage/app/private` are not in the zip, so they survive.
 2. Over SSH:
 
 ```bash
-cd ~/domains/YOURDOMAIN/public_html
+cd ~/domains/blue-snake-221127.hostingersite.com/public_html/pathwaytt
 php artisan down
 php artisan migrate --force
 php artisan db:seed --force
@@ -176,5 +185,5 @@ php artisan up
 
 Hostinger keeps weekly (Premium) or daily (Business) backups under **Files → Backups**.
 Those cover the database and `public_html`, including uploaded resumes in
-`storage/app/private`. Resumes are personal data: keep backups on the same retention terms
-as the app.
+`pathwaytt/storage/app/private`. Resumes are personal data: keep backups on the same
+retention terms as the app.

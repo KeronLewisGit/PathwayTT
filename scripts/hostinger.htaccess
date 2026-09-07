@@ -16,10 +16,11 @@ Options -Indexes -MultiViews
     RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|README\.md)$ - [F,L]
     RewriteRule ^(app|bootstrap|config|database|docs|resources|routes|storage|vendor|tests)(/|$) - [F,L]
 
-    # Send everything else into public/.
-    RewriteCond %{REQUEST_URI} !^/public/
-    RewriteCond %{REQUEST_URI} !^/\.well-known/
-    RewriteRule ^(.*)$ public/$1 [L]
+    # Send everything else into public/. The pattern is relative to this directory, so it
+    # works whether the project sits at the domain root or in a subfolder such as
+    # public_html/pathwaytt. Requests already under public/ and the /.well-known/ path
+    # used for SSL validation are left alone.
+    RewriteRule ^(?!public/|\.well-known/)(.*)$ public/$1 [L]
 </IfModule>
 
 # Belt and braces without mod_rewrite: never serve dotfiles or the env file.
