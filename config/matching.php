@@ -20,13 +20,114 @@ return [
 
     // Component weights for the 0-100 match score.
     'weights' => [
-        'required_skills' => 35, // Required skills coverage
-        'bonus_skills'    => 10, // Preferred/bonus skills coverage
-        'experience'      => 15, // Years of experience vs required
+        'required_skills' => 30, // Required skills coverage
+        'bonus_skills'    => 10, // Preferred/bonus skills coverage (absorbs the required weight when a listing states only nice-to-haves)
+        'role_fit'        => 15, // Listing title vs the roles on the resume (and the field they imply)
+        'experience'      => 10, // Years of experience vs required
         'education'       => 10, // Education / qualification level met
-        'industry'        => 10, // Industry alignment
+        'industry'        => 10, // Industry alignment (preference, else the field the resume implies)
         'arrangement'     => 10, // Work arrangement match (user pref vs job)
-        'geo_timezone'    => 10, // Geo eligibility + timezone overlap feasibility
+        'geo_timezone'    => 5,  // Geo eligibility + timezone overlap feasibility
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Skill evidence
+    |--------------------------------------------------------------------------
+    | Skills in these categories (teamwork, communication, remote-work habits,
+    | languages) are on almost every profile and every listing; sharing only
+    | those is not evidence that someone can do the job.
+    */
+    'generic_skill_categories' => ['soft-skills', 'remote-work', 'languages'],
+
+    // When a listing states skills we recognise, the score is capped by how
+    // many of them the candidate shares. Without this a listing whose only
+    // stated skills are all missing still scored 70+ on location/experience.
+    'skill_overlap_caps' => [
+        'none' => 45, // shares none of the listing's non-generic skills
+        'low' => 60,  // shares fewer than `low_overlap_ratio` of all stated skills
+    ],
+    'low_overlap_ratio' => 0.34,
+
+    // Dominant skill category on a profile → the industry the resume implies.
+    // Used for industry alignment when the user has not set a target industry,
+    // and as the weaker half of role fit. Needs a real cluster of specific
+    // skills before it says anything (one skill is not a field).
+    'min_skills_for_inference' => 3,
+    'skill_category_industries' => [
+        'software-it' => 'ict-software',
+        'finance-accounting' => 'financial-services-insurance',
+        'trades-energy' => 'energy-petrochemicals',
+        'sales-marketing' => 'distribution-retail',
+        'office-admin' => 'professional-services-accountinglegalconsulting',
+        'professional-services' => 'professional-services-accountinglegalconsulting',
+        'healthcare' => 'healthcare',
+        'hospitality-tourism' => 'tourism-hospitality',
+        'logistics-shipping' => 'logistics-shipping',
+        'creative-media' => 'creative-media',
+        'construction' => 'construction',
+        'agriculture' => 'agriculture-agro-processing',
+        'bpo-contact-centre' => 'bpo-contact-centre',
+        'education' => 'education',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Role vocabulary (see App\Services\Matching\RoleVocabulary)
+    |--------------------------------------------------------------------------
+    */
+    // Multi-word phrases collapsed before tokenising: regex => canonical term.
+    'role_phrases' => [
+        '/\b(software|front-?end|back-?end|full-?stack|web|platform|devops|cloud|data|systems?|application|mobile|ai|ml) engineer\w*/' => 'developer',
+        '/\b(help ?desk|it support|technical support|desktop support|service desk|systems? support|it solutions?)\b/' => 'itsupport',
+        '/\bbusiness development\b/' => 'sales',
+        '/\bsupply chain\b/' => 'logistics',
+        '/\bhuman resources?\b/' => 'hr',
+        '/\bcustomer (service|support|care|experience)\b/' => 'customerservice',
+        '/\bcall cent(re|er)\b/' => 'customerservice',
+        '/\bquantity surveyor\b/' => 'surveyor',
+        '/\bfood (and|&) beverage\b/' => 'hospitality',
+    ],
+
+    // canonical term => variants (stemmed automatically, so "programmers" → programmer).
+    'role_synonyms' => [
+        'developer' => ['programmer', 'coder', 'development', 'programming', 'software'],
+        'itsupport' => ['helpdesk', 'sysadmin'],
+        'accountant' => ['accounting', 'accounts', 'bookkeeper', 'bookkeeping', 'auditor', 'audit', 'payable', 'receivable', 'payables', 'receivables'],
+        'nurse' => ['nursing', 'rn'],
+        'teacher' => ['tutor', 'tutoring', 'lecturer', 'instructor', 'teaching', 'educator', 'trainer'],
+        'driver' => ['chauffeur', 'courier'],
+        'sales' => ['salesman', 'salesperson', 'saleswoman', 'merchandiser', 'telesales'],
+        'admin' => ['administrative', 'administrator', 'administration', 'secretary', 'clerk', 'receptionist', 'clerical'],
+        'chef' => ['cook', 'culinary', 'kitchen', 'baker'],
+        'marketing' => ['marketer', 'brand', 'advertising'],
+        'hr' => ['recruiter', 'recruitment', 'recruiting', 'payroll'],
+        'attorney' => ['lawyer', 'legal', 'counsel', 'paralegal', 'solicitor'],
+        'security' => ['guard'],
+        'logistics' => ['warehouse', 'inventory', 'dispatcher', 'freight', 'shipping'],
+        'customerservice' => ['csr', 'telemarketer', 'collector', 'collections'],
+        'hospitality' => ['bartender', 'barista', 'waiter', 'waitress', 'server', 'housekeeper', 'housekeeping', 'concierge'],
+        'mechanic' => ['mechanical'],
+        'electrician' => ['electrical'],
+        'welder' => ['welding', 'fabricator', 'pipefitter'],
+        'analyst' => ['analysis', 'analytics'],
+        'designer' => ['design', 'graphic', 'ux', 'ui'],
+        'writer' => ['copywriter', 'content', 'journalist', 'editor'],
+        'finance' => ['financial', 'banking', 'bank', 'treasury', 'credit', 'loans', 'underwriter', 'insurance'],
+    ],
+
+    // Dropped before comparison: seniority, filler, employment and location words.
+    'role_stopwords' => [
+        'senior', 'junior', 'sr', 'jr', 'lead', 'principal', 'staff', 'chief', 'head', 'director', 'vp',
+        'manager', 'management', 'officer', 'assistant', 'associate', 'coordinator', 'supervisor', 'specialist',
+        'executive', 'representative', 'agent', 'intern', 'trainee', 'graduate', 'entry', 'level', 'mid',
+        'and', 'the', 'for', 'with', 'from', 'into', 'per', 'via', 'our', 'your', 'you', 'all', 'new',
+        'remote', 'hybrid', 'onsite', 'on-site', 'work', 'home', 'part', 'full', 'time', 'contract', 'temporary',
+        'permanent', 'fixed', 'term', 'month', 'months', 'year', 'years', 'urgent', 'immediate', 'needed', 'wanted',
+        'hiring', 'vacancy', 'position', 'role', 'job', 'jobs', 'direct', 'client', 'team', 'member', 'general',
+        'trinidad', 'tobago', 'caribbean', 'region', 'regional', 'worldwide', 'international', 'south', 'north',
+        'east', 'west', 'central', 'ltd', 'limited', 'inc', 'company', 'group', 'services', 'service', 'solutions',
+        'experience', 'experienced', 'skilled', 'various', 'multiple', 'several', 'high', 'priority', 'systems',
     ],
 
     // Below this best-match score, the UI pivots to the Skills Gap Plan.

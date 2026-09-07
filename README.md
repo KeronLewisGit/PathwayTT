@@ -22,7 +22,7 @@ LAMP account; Docker is provided for local preview only.
   that exclude UTC-4, are hard-filtered rather than scored low. Remote realities (contractor
   vs employee, USD pay, overlap hours) are modelled; local realities (NIS, BIR, CSEC/CAPE)
   are first-class.
-- **Matching** — 0–100 score across seven weighted factors with a stored line-by-line
+- **Matching** — 0–100 score across eight weighted factors (skills, role fit against the resume, experience, education, industry, arrangement, location) with a stored line-by-line
   breakdown; missing required skills cap the score; weights, threshold and FX rate are
   admin-editable at runtime.
 - **Advisory mode** — gap analysis ranked by impact per week of effort, resources in local

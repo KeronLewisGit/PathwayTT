@@ -25,7 +25,7 @@ class MatchRecomputeService
 
         JobListing::query()
             ->active()
-            ->with('skills')
+            ->with(['skills', 'industry'])
             ->chunkById((int) config('matching.recompute_chunk_size', 100), function (Collection $listings) use ($candidate, $user, &$scored) {
                 foreach ($listings as $listing) {
                     $result = $this->scorer->score($candidate, $listing);

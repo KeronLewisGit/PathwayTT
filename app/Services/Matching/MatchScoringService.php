@@ -32,6 +32,7 @@ class MatchScoringService implements MatchScorerInterface
     private const LABELS = [
         'required_skills' => 'Required skills',
         'bonus_skills' => 'Nice-to-have skills',
+        'role_fit' => 'Role fit',
         'experience' => 'Experience',
         'education' => 'Education',
         'industry' => 'Industry alignment',
@@ -75,12 +76,45 @@ class MatchScoringService implements MatchScorerInterface
                     .($missingRequired->isNotEmpty() ? ' (missing: '.$missingRequired->pluck('name')->join(', ').')' : ''),
         );
 
-        $components[] = $this->component('bonus_skills', $weights,
+        // A listing that states only nice-to-haves still says what the job is
+        // about. Its skills weight must not leak to location and experience,
+        // so the bonus component absorbs the required weight in that case.
+        $bonusWeights = $required->isEmpty() && $preferred->isNotEmpty()
+            ? array_merge($weights, ['bonus_skills' => (int) ($weights['bonus_skills'] ?? 0) + (int) ($weights['required_skills'] ?? 0)])
+            : $weights;
+
+        $components[] = $this->component('bonus_skills', $bonusWeights,
             $preferred->isEmpty() ? null : self::coverage($preferred->count(), $missingPreferred->count()),
             $preferred->isEmpty()
                 ? 'No nice-to-have skills listed'
                 : sprintf('You have %d of %d nice-to-have skills', $preferred->count() - $missingPreferred->count(), $preferred->count()),
         );
+
+        // ── Role fit: what the resume says they have done vs the listing title ──
+        $jobIndustrySlug = $job->relationLoaded('industry') ? $job->industry?->slug : $job->industry()->value('slug');
+        $sameField = $candidate->inferredIndustrySlug !== null && $jobIndustrySlug !== null && $candidate->inferredIndustrySlug === $jobIndustrySlug;
+        $fieldKnown = $candidate->inferredIndustrySlug !== null && $jobIndustrySlug !== null;
+
+        if ($candidate->roleTerms !== []) {
+            $shared = RoleVocabulary::overlap(RoleVocabulary::terms($job->title), $candidate->roleTerms);
+            [$score, $detail] = match (true) {
+                $shared !== [] => [100, 'Matches roles on your resume ('.implode(', ', array_slice($shared, 0, 3)).')'],
+                $sameField => [60, 'Same field as your resume, but a different kind of role'],
+                ! $fieldKnown => [30, 'Not a role you have held; the listing does not say which field it is in'],
+                default => [0, 'Not a role you have held, in a different field from your resume'],
+            };
+        } elseif ($fieldKnown) {
+            [$score, $detail] = $sameField
+                ? [60, 'In the field your skills point to (add your work history for a closer comparison)']
+                : [0, 'Outside the field your skills point to'];
+        } else {
+            [$score, $detail] = [null, 'Add your work history so we can compare roles'];
+        }
+
+        $components[] = $this->component('role_fit', $weights, $score, $detail);
+        if ($score === 0) {
+            $gaps[] = 'This is a different kind of role from the ones on your resume';
+        }
 
         // ── Experience ──────────────────────────────────────────────
         $requiredYears = $job->requiredYears();
@@ -124,13 +158,19 @@ class MatchScoringService implements MatchScorerInterface
         }
 
         // ── Industry ────────────────────────────────────────────────
-        if ($candidate->preferredIndustryId === null || $job->industry_id === null) {
-            $components[] = $this->component('industry', $weights, null,
-                $candidate->preferredIndustryId === null ? 'No target industry set in your preferences' : 'Listing has no industry');
-        } else {
+        if ($job->industry_id === null) {
+            $components[] = $this->component('industry', $weights, null, 'Listing has no industry');
+        } elseif ($candidate->preferredIndustryId !== null) {
             $match = $candidate->preferredIndustryId === $job->industry_id;
             $components[] = $this->component('industry', $weights, $match ? 100 : 0,
                 $match ? 'In your target industry' : 'Outside your target industry');
+        } elseif ($candidate->inferredIndustrySlug !== null) {
+            // No preference set: fall back to the field the resume implies.
+            $match = $candidate->inferredIndustrySlug === $jobIndustrySlug;
+            $components[] = $this->component('industry', $weights, $match ? 100 : 0,
+                $match ? 'In the field your resume points to' : 'Outside the field your resume points to (set a target industry in preferences to override)');
+        } else {
+            $components[] = $this->component('industry', $weights, null, 'No target industry set in your preferences');
         }
 
         // ── Work arrangement ────────────────────────────────────────
@@ -203,6 +243,28 @@ class MatchScoringService implements MatchScorerInterface
             $cap = (int) $confidence['candidate_without_skills'];
             $capReason = "Your profile has no skills yet, so scores are capped at {$cap}";
             $gaps[] = 'Add your skills to your profile — matching only counts skills that are on it';
+        }
+
+        // Skill-overlap caps: when the listing does state skills, the score is
+        // bounded by how many of them the candidate actually shares. Generic
+        // skills (teamwork, communication…) are not evidence on their own.
+        $overlapCaps = config('matching.skill_overlap_caps', []);
+        $generic = config('matching.generic_skill_categories', []);
+        $specific = $skills->reject(fn (Skill $s) => in_array($s->category, $generic, true));
+        $sharedSpecific = $specific->filter(fn (Skill $s) => $candidate->hasSkill($s->id));
+        $sharedAll = $skills->filter(fn (Skill $s) => $candidate->hasSkill($s->id));
+
+        if ($candidate->skillIds !== [] && $specific->isNotEmpty() && $sharedSpecific->isEmpty() && ! empty($overlapCaps['none'])) {
+            if ($cap === null || (int) $overlapCaps['none'] < $cap) {
+                $cap = (int) $overlapCaps['none'];
+                $capReason = "None of the skills this listing asks for are on your profile, so the score is capped at {$cap}";
+            }
+        } elseif ($candidate->skillIds !== [] && $skills->isNotEmpty() && ! empty($overlapCaps['low'])
+            && $sharedAll->count() / $skills->count() < (float) config('matching.low_overlap_ratio', 0.34)) {
+            if ($cap === null || (int) $overlapCaps['low'] < $cap) {
+                $cap = (int) $overlapCaps['low'];
+                $capReason = sprintf('Only %d of the %d skills this listing asks for are on your profile, so the score is capped at %d', $sharedAll->count(), $skills->count(), $cap);
+            }
         }
 
         $score = $cap !== null ? min($raw, $cap) : $raw;

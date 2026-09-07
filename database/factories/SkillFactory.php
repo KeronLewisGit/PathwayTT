@@ -17,7 +17,7 @@ class SkillFactory extends Factory
         return [
             'name' => ucwords($name),
             'slug' => Str::slug($name),
-            'category' => fake()->randomElement(['software-it', 'office-admin', 'finance-accounting', 'soft-skills']),
+            'category' => fake()->randomElement(['software-it', 'office-admin', 'finance-accounting']), // non-generic: generic categories are not match evidence
             'aliases' => [],
         ];
     }

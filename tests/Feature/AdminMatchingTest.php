@@ -26,8 +26,8 @@ test('admins can edit matching weights, threshold and fx rate', function () {
         ->test(MatchingSettings::class)
         ->fillForm([
             'weights' => [
-                'required_skills' => 40, 'bonus_skills' => 5, 'experience' => 15, 'education' => 10,
-                'industry' => 10, 'arrangement' => 10, 'geo_timezone' => 10,
+                'required_skills' => 40, 'bonus_skills' => 5, 'role_fit' => 10, 'experience' => 10, 'education' => 10,
+                'industry' => 10, 'arrangement' => 10, 'geo_timezone' => 5,
             ],
             'advisory_threshold' => 60,
             'fx_rate' => 6.75,
