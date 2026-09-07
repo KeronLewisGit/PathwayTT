@@ -1,0 +1,28 @@
+# Root .htaccess for the "whole project inside public_html" layout Hostinger recommends.
+# scripts/build-hostinger.ps1 copies this to the zip root as .htaccess.
+#
+# Every request is internally rewritten into public/, where Laravel's own
+# public/.htaccess routes it to index.php. Nothing outside public/ is ever
+# served, and the rules below refuse direct access to sensitive paths as a
+# second line of defence should rewriting ever be disabled.
+
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Refuse direct access to application internals and secrets.
+    RewriteRule ^\.env - [F,L]
+    RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|README\.md)$ - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|docs|resources|routes|storage|vendor|tests)(/|$) - [F,L]
+
+    # Send everything else into public/.
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteCond %{REQUEST_URI} !^/\.well-known/
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Belt and braces without mod_rewrite: never serve dotfiles or the env file.
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

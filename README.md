@@ -102,7 +102,7 @@ enforces both.
 ## Deployment
 
 See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for shared-hosting (cPanel) and VPS steps, and
-[docs/DEPLOYMENT-HOSTINGER.md](docs/DEPLOYMENT-HOSTINGER.md) for Hostinger hPanel specifically
+[docs/DEPLOYMENT-HOSTINGER.md](docs/DEPLOYMENT-HOSTINGER.md) for Hostinger hPanel (project inside `public_html`, root `.htaccess` routes to `public/`)
 (`scripts\build-hostinger.ps1` produces the upload zip).
 
 ## Project layout

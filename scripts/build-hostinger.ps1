@@ -25,6 +25,7 @@ if (Test-Path $stage) { Remove-Item -Recurse -Force $stage }
 New-Item -ItemType Directory -Force $stage | Out-Null
 $include = 'app','bootstrap','config','database','docs','public','resources','routes','storage','artisan','composer.json','composer.lock','.env.example','README.md'
 foreach ($item in $include) { Copy-Item -Recurse -Force (Join-Path $root $item) (Join-Path $stage $item) }
+Copy-Item -Force (Join-Path $root "scripts\hostinger.htaccess") (Join-Path $stage ".htaccess")
 
 # Never ship local runtime state.
 Remove-Item -Recurse -Force (Join-Path $stage 'storage\app\private\*') -ErrorAction SilentlyContinue
