@@ -20,6 +20,12 @@ class RecomputeAllMatchesJob implements ShouldQueue, ShouldBeUnique
 
     public int $uniqueFor = 300;
 
+    /** Bulk work stays on the low-priority queue; the fan-out below inherits it. */
+    public function __construct()
+    {
+        $this->onQueue('sync');
+    }
+
     public function handle(): void
     {
         User::query()
@@ -27,7 +33,7 @@ class RecomputeAllMatchesJob implements ShouldQueue, ShouldBeUnique
             ->select('id')
             ->chunkById((int) config('matching.recompute_chunk_size', 100), function (Collection $users) {
                 foreach ($users as $user) {
-                    RecomputeUserMatchesJob::dispatch($user->id);
+                    RecomputeUserMatchesJob::dispatch($user->id)->onQueue('sync');
                 }
             });
     }

@@ -17,17 +17,33 @@ Artisan::command('inspire', function () {
 |
 |   * * * * * php /path/to/artisan schedule:run >> /dev/null 2>&1
 |
-| Each minute this drains the queue, exiting when empty (or after 50s so
-| runs never overlap the next minute). On a VPS with a supervisor-managed
-| worker, set QUEUE_VIA_SCHEDULER=false to disable it.
+| Each minute this starts two background workers, each exiting when its
+| queue is empty (or after 50s so runs never pile up):
+|
+|   default — user-facing jobs: resume parsing, per-user match recompute,
+|             gap plans. Must never wait behind a crawl.
+|   sync    — board crawls (up to 10 min) and the post-sync match fan-out.
+|
+| The overlap locks expire quickly so a worker killed by the host cannot
+| block the queue for long. On a VPS with a supervisor-managed worker, set
+| QUEUE_VIA_SCHEDULER=false to disable it.
 */
 if (config('queue.via_scheduler')) {
     Schedule::command('queue:work', [
+        '--queue=default',
         '--stop-when-empty',
         '--max-time=50',
         '--tries=3',
         '--backoff=10',
-    ])->everyMinute()->withoutOverlapping();
+    ])->name('queue-default')->everyMinute()->withoutOverlapping(5)->runInBackground();
+
+    Schedule::command('queue:work', [
+        '--queue=sync',
+        '--stop-when-empty',
+        '--max-time=50',
+        '--tries=3',
+        '--backoff=10',
+    ])->name('queue-sync')->everyMinute()->withoutOverlapping(15)->runInBackground();
 }
 
 /*

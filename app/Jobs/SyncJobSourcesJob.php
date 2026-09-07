@@ -20,6 +20,12 @@ class SyncJobSourcesJob implements ShouldQueue, ShouldBeUnique
 
     public int $uniqueFor = 900;
 
+    /** Long-running: kept off the user-facing queue so resume parses never wait behind a crawl. */
+    public function __construct()
+    {
+        $this->onQueue('sync');
+    }
+
     public function handle(): void
     {
         Artisan::call('job:sync');

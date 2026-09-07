@@ -92,7 +92,9 @@ One entry, every minute:
 This drives:
 
 - the **queue** (resume parsing, match recomputation, gap plans) — each minute
-  `queue:work --stop-when-empty --max-time=50` runs and exits, so nothing overlaps;
+  two background workers start (`--queue=default` for parsing/matching/plans, `--queue=sync`
+  for board crawls and the post-sync fan-out), each exiting when empty or after 50s, so a
+  ten-minute crawl never delays a resume parse;
 - the hourly **job:sync** that keeps the live feed current (each board adapter
   respects its own rate limit, so hourly never over-calls a board).
 
