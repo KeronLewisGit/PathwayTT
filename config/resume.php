@@ -14,6 +14,20 @@ return [
 
     'driver' => env('RESUME_PARSER_DRIVER', 'rule'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Parse inline (during the upload request)
+    |--------------------------------------------------------------------------
+    | true  — the resume is parsed before the upload request returns, so the
+    |         review screen is ready instantly. Right for shared hosting, where
+    |         the queue is only drained once a minute by cron. The rule-based
+    |         parser takes a few seconds; the LLM driver can take 10–30 s, so
+    |         keep max_execution_time ≥ 120 when combining the two.
+    | false — the parse is queued and picked up by the next worker run.
+    | Either way, match recomputation stays queued.
+    */
+    'parse_inline' => (bool) env('RESUME_PARSE_INLINE', true),
+
     'anthropic' => [
         'api_key' => env('ANTHROPIC_API_KEY'),
         'model' => env('ANTHROPIC_MODEL', 'claude-opus-5'),

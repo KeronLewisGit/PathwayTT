@@ -31,7 +31,8 @@
             <div wire:loading wire:target="file" class="text-sm text-gray-500">Uploading…</div>
 
             <x-primary-button type="submit" wire:loading.attr="disabled" wire:target="file,save">
-                Upload &amp; parse
+                <span wire:loading.remove wire:target="save">Upload &amp; parse</span>
+                <span wire:loading wire:target="save">Parsing your resume…</span>
             </x-primary-button>
         </form>
 

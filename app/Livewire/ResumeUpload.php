@@ -15,6 +15,7 @@ use Illuminate\Validation\ValidationException;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
+use Throwable;
 
 class ResumeUpload extends Component
 {
@@ -69,11 +70,36 @@ class ResumeUpload extends Component
             'parse_status' => ParseStatus::Pending,
         ]);
 
-        ParseResumeJob::dispatch($resume);
-
         $this->reset('file');
-        session()->flash('resume-uploaded', 'Resume uploaded — parsing has started.');
+
+        if (! config('resume.parse_inline')) {
+            ParseResumeJob::dispatch($resume);
+            session()->flash('resume-uploaded', 'Resume uploaded — parsing has started.');
+            $this->awardAchievements();
+
+            return;
+        }
+
+        // Parse now, inside this request, so the review screen is ready the moment
+        // the upload finishes. The job is invoked directly (not via the sync queue)
+        // so the outcome never depends on queue configuration; its failed() hook
+        // still records a bad file on the resume row instead of surfacing a 500.
+        $job = new ParseResumeJob($resume);
+
+        try {
+            app()->call([$job, 'handle']);
+        } catch (Throwable $e) {
+            $job->failed($e);
+            report($e);
+            session()->flash('resume-uploaded', 'Resume uploaded, but we could not read it — see the note below and try a text-based PDF or DOCX.');
+            $this->awardAchievements();
+
+            return;
+        }
+
         $this->awardAchievements();
+        session()->flash('resume-uploaded', 'Resume parsed — review what we found.');
+        $this->redirectRoute('profile.review', navigate: true);
     }
 
     public function delete(int $resumeId): void

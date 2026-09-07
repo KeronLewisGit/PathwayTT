@@ -23,7 +23,49 @@ function verifiedUser(): User
 
 // ── Upload flow ─────────────────────────────────────────────────────
 
-test('a valid pdf upload stores privately and queues parsing', function () {
+test('an upload parses inline and lands on the review screen', function () {
+    Storage::fake('local');
+    Queue::fake(); // match recompute stays queued even when the parse is inline
+    $this->seed(SkillSeeder::class);
+    $user = verifiedUser();
+
+    $pdf = PdfBuilder::fromLines(['Jane Mohammed', 'Skills', 'PHP, MySQL']);
+
+    Livewire::actingAs($user)
+        ->test(ResumeUpload::class)
+        ->set('file', UploadedFile::fake()->createWithContent('cv.pdf', $pdf))
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertRedirect(route('profile.review'));
+
+    $resume = Resume::query()->firstOrFail();
+
+    expect($resume->parse_status)->toBe(ParseStatus::Parsed)
+        ->and($user->profile()->firstOrFail()->full_name)->toBe('Jane Mohammed');
+
+    Queue::assertNotPushed(ParseResumeJob::class);
+    Queue::assertPushed(App\Jobs\RecomputeUserMatchesJob::class);
+});
+
+test('an unreadable upload is recorded as failed instead of erroring', function () {
+    Storage::fake('local');
+    Queue::fake();
+
+    Livewire::actingAs(verifiedUser())
+        ->test(ResumeUpload::class)
+        ->set('file', UploadedFile::fake()->create('cv.pdf', 200, 'application/pdf'))
+        ->call('save')
+        ->assertHasNoErrors()
+        ->assertNoRedirect();
+
+    $resume = Resume::query()->firstOrFail();
+
+    expect($resume->parse_status)->toBe(ParseStatus::Failed)
+        ->and($resume->parse_error)->not->toBeEmpty();
+});
+
+test('a valid pdf upload stores privately and queues parsing when inline is off', function () {
+    config(['resume.parse_inline' => false]);
     Storage::fake('local');
     Queue::fake();
     $user = verifiedUser();

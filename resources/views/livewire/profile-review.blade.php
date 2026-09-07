@@ -1,4 +1,8 @@
 <div class="space-y-8">
+    @if (session('resume-uploaded'))
+        <x-flash :message="session('resume-uploaded')" />
+    @endif
+
     <x-profile-strength :strength="$strength" compact />
 
     {{-- ── Profile details ─────────────────────────────────────────── --}}
