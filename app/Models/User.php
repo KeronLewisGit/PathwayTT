@@ -28,6 +28,18 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     ];
 
     /**
+     * Resume files are PII on disk. The resumes FK cascades at the database
+     * level, which bypasses Resume's deleting hook, so every deletion path
+     * (self-service, admin panel, bulk) must purge the files explicitly.
+     */
+    protected static function booted(): void
+    {
+        static::deleting(function (User $user): void {
+            $user->resumes()->get()->each->delete();
+        });
+    }
+
+    /**
      * The attributes that should be hidden for serialization.
      *
      * @var list<string>

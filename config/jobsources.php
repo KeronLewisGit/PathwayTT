@@ -48,6 +48,36 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Industry from job title (local boards)
+    |--------------------------------------------------------------------------
+    | CaribbeanJobs cards carry no category, so without this every local
+    | listing had industry NULL and vanished the moment a user picked an
+    | industry filter. Ordered, word-bounded patterns run over the title first
+    | and then title + excerpt; the first hit wins. Keep specific sectors above
+    | generic words ("server" is ICT before it is hospitality). A miss leaves
+    | the industry unset rather than guessing.
+    */
+
+    'title_industry_patterns' => [
+        'public-sector' => '/\b(ministry|government|public service|municipal|regional corporation|statutory|police|defence|customs officer|immigration)\b/',
+        'ict-software' => '/\b(software|developer|programmer|devops|data (?:analyst|scientist|engineer)|database|network|system\w* (?:administrator|analyst|engineer)|server (?:administrator|engineer)|it (?:support|officer|technician|manager)|information technology|cyber\w*|cloud|web|front-?end|back-?end|full-?stack|platform engineer\w*|sre|qa engineer|tester|ict|help ?desk technician|erp|sap|business analyst|scrum|product manager|ui|ux)\b/',
+        'healthcare' => '/\b(nurse|nursing|medical|clinic\w*|pharmac\w*|dental|dentist|physician|doctor|health|caregiver|lab technologist|phlebotom\w*|radiograph\w*|physiotherap\w*)\b/',
+        'education' => '/\b(teacher|teaching|tutor|lecturer|instructor|educat\w*|school|curriculum|trainer)\b/',
+        'energy-petrochemicals' => '/\b(petrochem\w*|oil|gas|refiner\w*|drilling|offshore|onshore|rig|pipeline|wellsite|well site|petroleum|lng|upstream|downstream|hse|energy|instrumentation)\b/',
+        'construction' => '/\b(construction|civil|carpenter|mason|electrician|plumber|welder|pipefitter|site supervisor|quantity surveyor|surveyor|architect\w*|hvac|scaffold\w*|crane|foreman|estimator|draught\w*|drafts\w*|project engineer)\b/',
+        'logistics-shipping' => '/\b(logistic\w*|supply chain|shipping|warehouse|freight|courier|driver|dispatch\w*|fleet|forklift|port operations|customs broker\w*|inventory)\b/',
+        'bpo-contact-centre' => '/\b(call cent\w*|contact cent\w*|customer (?:service|support|care|experience)|telemarket\w*|help ?desk|bpo)\b/',
+        'professional-services-accountinglegalconsulting' => '/\b(accountant|accounting|accounts|audit\w*|bookkeep\w*|legal|attorney|lawyer|paralegal|counsel|human resource\w*|hr|recruit\w*|consultant|consulting|payroll|compliance|administrative|administrator|admin|secretary|receptionist|clerk|office assistant|executive assistant|procurement|purchasing|project manager|operations manager)\b/',
+        'financial-services-insurance' => '/\b(bank\w*|insurance|underwrit\w*|actuar\w*|credit|loan\w*|teller|financial advis\w*|investment|treasury|claims)\b/',
+        'creative-media' => '/\b(graphic|design\w*|writer|copywrit\w*|content|creative|marketing|media|video|photograph\w*|brand\w*|social media|communications officer|public relations|journalist|editor)\b/',
+        'distribution-retail' => '/\b(sales|merchandis\w*|cashier|retail|store|shop|showroom|business development|account executive|distribution|wholesale|buyer)\b/',
+        'manufacturing' => '/\b(manufactur\w*|production|machine operator|machinist|factory|plant|assembly|quality control|qc|maintenance technician|mechanic\w*|technician|fabricat\w*|packag\w*|line operator|process operator)\b/',
+        'tourism-hospitality' => '/\b(hotel|resort|restaurant|barista|chef|cook|kitchen|waiter|waitress|server|bartender|housekeep\w*|front desk|concierge|hospitality|tour\w*|travel|guest services|steward\w*|food (?:and|&) beverage|f&b|catering)\b/',
+        'agriculture-agro-processing' => '/\b(agricultur\w*|farm\w*|agro\w*|crop|livestock|veterinar\w*|fisher\w*|estate)\b/',
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | CSV import
     |--------------------------------------------------------------------------
     | Drop CSV files matching the template (docs/job-import-template.csv)

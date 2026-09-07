@@ -78,7 +78,8 @@ class JobPreferences extends Component
             'employment_types' => ['array'],
             'employment_types.*' => [Rule::enum(EmploymentType::class)],
             'seniority' => ['nullable', Rule::in(array_keys(JobListing::SENIORITIES))],
-            'min_salary' => ['nullable', 'regex:/^[\d,]+(\.\d{1,2})?$/'],
+            // Capped at 9 digits: unbounded input overflowed the cents column.
+            'min_salary' => ['nullable', 'regex:/^\d{1,3}(,?\d{3}){0,2}(\.\d{1,2})?$|^\d{1,9}(\.\d{1,2})?$/'],
             'min_salary_currency' => [Rule::in(['TTD', 'USD'])],
             'min_salary_period' => [Rule::in(['hourly', 'monthly', 'yearly'])],
             'willing_to_relocate' => ['boolean'],

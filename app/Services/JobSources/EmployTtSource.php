@@ -58,7 +58,7 @@ class EmployTtSource extends HtmlBoardSource
 
         $description = null;
         if ((bool) config('jobsources.remote.boards.employtt.fetch_details', true)) {
-            $detail = $this->getHtml($raw['url']);
+            $detail = $this->detailHtml($raw['url']);
             if ($detail !== null) {
                 $description = self::text(implode("\n\n", $detail->filter('.field-descriptions')->each(fn (Crawler $d) => $d->html())));
             }
@@ -72,7 +72,7 @@ class EmployTtSource extends HtmlBoardSource
             sourceJobId: $m[1],
             title: html_entity_decode($raw['title'], ENT_QUOTES | ENT_HTML5),
             companyName: $raw['employer'] ?: null,
-            industrySlug: self::industryFor($raw['tags'] ?? []),
+            industrySlug: self::industryFor($raw['tags'] ?? []) ?? self::industryFromTitle($raw['title']),
             workArrangement: 'on_premises',
             employmentType: self::employmentType($status),
             locationText: ($raw['location'] ? $raw['location'].', ' : '').'Trinidad & Tobago',

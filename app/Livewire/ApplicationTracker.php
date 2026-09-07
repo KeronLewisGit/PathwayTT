@@ -38,7 +38,7 @@ class ApplicationTracker extends Component
         Gate::authorize('update', $application);
 
         try {
-            $application->transitionTo(ApplicationStatus::from($status));
+            $application->transitionTo(ApplicationStatus::tryFrom($status) ?? throw new InvalidArgumentException('Unknown status.'));
             $this->notify('Marked as '.strtolower($application->status->label()).'.', 'success');
             $this->awardAchievements();
         } catch (InvalidArgumentException $e) {
@@ -53,7 +53,8 @@ class ApplicationTracker extends Component
 
         $this->validate(["notes.{$applicationId}" => ['nullable', 'string', 'max:2000']]);
 
-        $application->update(['notes' => $this->notes[$applicationId] ?: null]);
+        // Rows saved from another tab after mount() have no notes entry yet.
+        $application->update(['notes' => ($this->notes[$applicationId] ?? '') ?: null]);
         session()->flash("notes-saved-{$applicationId}", 'Notes saved.');
     }
 

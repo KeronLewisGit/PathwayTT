@@ -168,10 +168,15 @@ abstract class RemoteBoardSource implements JobSourceInterface
             return null;
         }
 
-        $text = html_entity_decode($html, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // Strip markup BEFORE decoding entities: decoding first turns a literal
+        // "&lt;3 years" into "<3 years", and strip_tags then eats everything up
+        // to the next ">" — silently truncating the description.
+        $text = preg_replace('/<(script|style)\b[^>]*>.*?<\/\1>/is', ' ', $html);
         $text = preg_replace('/<br\s*\/?>|<\/(p|div|li|h[1-6]|tr)>/i', "\n", $text);
         $text = strip_tags($text);
+        $text = html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8');
         $text = preg_replace('/[ \t]+/', ' ', $text);
+        $text = preg_replace('/^[ \t]+|[ \t]+$/m', '', $text);
         $text = preg_replace('/\n{3,}/', "\n\n", $text);
         $text = trim($text);
 

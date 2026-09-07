@@ -39,25 +39,50 @@ class JobSyncCommand extends Command
                 'started_at' => now(),
             ]);
 
-            $fetched = $created = $updated = 0;
+            $fetched = $created = $updated = $skipped = 0;
+            $skipReasons = [];
 
             try {
                 foreach ($source->fetch() as $dto) {
                     $fetched++;
-                    $result = $ingestor->ingest($dto);
-                    $result['created'] ? $created++ : $updated++;
+
+                    // One malformed listing must not sink the other few hundred —
+                    // and, since a failed run is retried every hour, it would sink
+                    // them at the same listing every time.
+                    try {
+                        $result = $ingestor->ingest($dto);
+                    } catch (Throwable $e) {
+                        $skipped++;
+                        if (count($skipReasons) < 3) {
+                            $skipReasons[] = ($dto->sourceJobId ?? '?').': '.mb_substr($e->getMessage(), 0, 120);
+                        }
+                        report($e);
+
+                        continue;
+                    }
+
+                    if ($result['created']) {
+                        $created++;
+                    } elseif ($result['changed']) {
+                        $updated++;
+                    }
                 }
+
+                $notes = implode(' · ', array_filter([
+                    $source->notes(),
+                    $skipped > 0 ? "{$skipped} listing(s) skipped — ".implode('; ', $skipReasons) : null,
+                ]));
 
                 $run->update([
                     'finished_at' => now(),
                     'fetched_count' => $fetched,
                     'created_count' => $created,
                     'updated_count' => $updated,
-                    'notes' => $source->notes(),
+                    'notes' => $notes !== '' ? $notes : null,
                 ]);
 
-                $this->info("[{$source->key()}] fetched {$fetched}, created {$created}, updated {$updated}"
-                    .($source->notes() ? " — {$source->notes()}" : ''));
+                $this->info("[{$source->key()}] fetched {$fetched}, created {$created}, updated {$updated}, skipped {$skipped}"
+                    .($notes !== '' ? " — {$notes}" : ''));
             } catch (Throwable $e) {
                 $run->update([
                     'finished_at' => now(),

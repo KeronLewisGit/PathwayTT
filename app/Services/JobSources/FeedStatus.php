@@ -21,6 +21,7 @@ class FeedStatus
             ->whereNotIn('source', ['manual', 'csv'])
             ->whereNull('error')
             ->whereNotNull('finished_at')
+            ->where('fetched_count', '>', 0) // a throttled no-op run is not a fetch
             ->max('finished_at');
 
         $updatedAt = $lastFetch ? Carbon::parse($lastFetch) : null;

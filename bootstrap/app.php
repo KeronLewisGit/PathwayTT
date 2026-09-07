@@ -11,6 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Livewire binds #[Url] props before mount(); an array-valued query
+        // parameter (?q[]=x) would otherwise fatally hit a string property.
+        $middleware->web(prepend: [
+            App\Http\Middleware\RejectArrayQueryStrings::class,
+        ]);
+
         $middleware->alias([
             'verified.optional' => App\Http\Middleware\VerifyEmailIfRequired::class,
         ]);

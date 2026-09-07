@@ -67,6 +67,60 @@ abstract class HtmlBoardSource extends RemoteBoardSource
         return (int) config("jobsources.remote.boards.{$this->key()}.max_pages", 3);
     }
 
+    /**
+     * Industry slug inferred from a listing's title (and, failing that, its
+     * excerpt). Local boards publish no category, and an unclassified listing
+     * disappears from every industry-filtered view — see
+     * config/jobsources.php 'title_industry_patterns'.
+     */
+    public static function industryFromTitle(string $title, ?string $excerpt = null): ?string
+    {
+        $patterns = config('jobsources.title_industry_patterns', []);
+
+        foreach ([$title, trim($title.' '.(string) $excerpt)] as $haystack) {
+            $haystack = mb_strtolower($haystack);
+            if ($haystack === '') {
+                continue;
+            }
+            foreach ($patterns as $slug => $pattern) {
+                if (preg_match($pattern, $haystack)) {
+                    return $slug;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    /** Employment type when the title says so ("Temporary Administrative Assistant", "(3 month Contract)"). */
+    public static function employmentFromTitle(string $title): ?string
+    {
+        $t = mb_strtolower($title);
+
+        return match (true) {
+            (bool) preg_match('/\b(temporary|temp|seasonal|part[- ]time|intern\w*|summer)\b/', $t) => 'temporary',
+            (bool) preg_match('/\b(contract|fixed[- ]term|freelance)\b/', $t) => 'contract',
+            (bool) preg_match('/\b(permanent|full[- ]time)\b/', $t) => 'permanent',
+            default => null,
+        };
+    }
+
+    /**
+     * A listing's detail page, or null when it cannot be fetched. Detail pages
+     * vanish between the index crawl and the follow-up request (filled or
+     * withdrawn postings); losing one description must not abort the board.
+     */
+    protected function detailHtml(string $url): ?Crawler
+    {
+        try {
+            return $this->getHtml($url);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return null;
+        }
+    }
+
     /** Text of the first node matching a selector, or null. */
     protected static function nodeText(Crawler $node, string $selector): ?string
     {

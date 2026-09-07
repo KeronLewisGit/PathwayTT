@@ -8,6 +8,7 @@ use App\Models\Application;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use InvalidArgumentException;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 /**
@@ -19,6 +20,7 @@ class JobTrackButton extends Component
 {
     use AwardsAchievements;
 
+    #[Locked]
     public int $jobListingId;
 
     public function save(): void
@@ -45,7 +47,7 @@ class JobTrackButton extends Component
         Gate::authorize('update', $application);
 
         try {
-            $application->transitionTo(ApplicationStatus::from($status));
+            $application->transitionTo(ApplicationStatus::tryFrom($status) ?? throw new InvalidArgumentException('Unknown status.'));
             $this->notify('Marked as '.strtolower($application->status->label()).'.', 'success');
             $this->awardAchievements();
         } catch (InvalidArgumentException $e) {

@@ -75,6 +75,10 @@ class TextExtractor
     {
         // Unify line endings, strip control chars (keep \n and \t), collapse
         // runs of blank lines, trim trailing space per line.
+        // Drop invalid UTF-8 first: pdfparser can emit stray bytes, and the /u
+        // regex below would then fail (returning null) and MySQL would reject
+        // the text with "Incorrect string value".
+        $text = mb_convert_encoding($text, 'UTF-8', 'UTF-8');
         $text = str_replace(["\r\n", "\r"], "\n", $text);
         $text = preg_replace('/[^\P{C}\n\t]+/u', '', $text) ?? $text;
         $lines = array_map(fn (string $line) => rtrim($line), explode("\n", $text));

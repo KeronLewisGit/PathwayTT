@@ -17,6 +17,10 @@ class ResumeDownloadController extends Controller
     {
         Gate::authorize('view', $resume);
 
+        // A row whose file is gone (restore, manual cleanup) must 404, not 500:
+        // download() reads the size first and throws when the file is missing.
+        abort_unless(Storage::disk(config('resume.disk'))->exists($resume->path), 404);
+
         return Storage::disk(config('resume.disk'))->download(
             $resume->path,
             $resume->original_filename,

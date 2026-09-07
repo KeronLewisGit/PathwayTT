@@ -3,7 +3,12 @@
 namespace App\Services\JobSources;
 
 use App\DTOs\JobDto;
+use App\Enums\EmploymentType;
+use App\Enums\GeoEligibility;
+use App\Enums\QualificationType;
+use App\Enums\WorkArrangement;
 use App\Support\Money;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -97,7 +102,9 @@ class CsvImportSource implements JobSourceInterface
                 continue; // blank line
             }
 
-            $row = [];
+            // Only title + work_arrangement are required; every other column may be
+            // absent from a hand-made file and must read as blank, not crash.
+            $row = array_fill_keys(self::COLUMNS, '');
             foreach ($header as $i => $column) {
                 $row[$column] = isset($values[$i]) ? trim((string) $values[$i]) : '';
             }
@@ -106,6 +113,12 @@ class CsvImportSource implements JobSourceInterface
                 continue;
             }
 
+            // Enum and date columns are validated HERE, inside the generator, so a
+            // bad cell fails this file (moved to failed/ with a line number) instead
+            // of being written to the database, where the model's enum casts would
+            // then throw on every page that loads the listing.
+            $where = "{$filename} line {$lineNumber}";
+
             yield new JobDto(
                 source: $this->key(),
                 sourceJobId: $row['source_job_id'] !== '' ? $row['source_job_id']
@@ -113,15 +126,15 @@ class CsvImportSource implements JobSourceInterface
                 title: $row['title'],
                 companyName: $row['company'] ?: null,
                 industrySlug: $row['industry_slug'] ?: null,
-                workArrangement: $row['work_arrangement'] ?: 'on_premises',
-                employmentType: $row['employment_type'] ?: null,
+                workArrangement: self::enumValue(WorkArrangement::class, $row['work_arrangement'] ?: 'on_premises', 'work_arrangement', $where),
+                employmentType: self::enumValue(EmploymentType::class, $row['employment_type'] ?: null, 'employment_type', $where),
                 locationText: $row['location'] ?: null,
                 country: $row['country'] !== '' ? strtoupper(substr($row['country'], 0, 2)) : null,
-                geoEligibility: $row['geo_eligibility'] ?: null,
+                geoEligibility: self::enumValue(GeoEligibility::class, $row['geo_eligibility'] ?: null, 'geo_eligibility', $where),
                 requiredOverlapHours: $row['required_overlap_hours'] !== '' ? (int) $row['required_overlap_hours'] : null,
                 seniority: $row['seniority'] ?: null,
                 minYearsExperience: ($row['min_years_experience'] ?? '') !== '' ? (int) $row['min_years_experience'] : null,
-                minEducationLevel: ($row['min_education_level'] ?? '') !== '' ? strtolower($row['min_education_level']) : null,
+                minEducationLevel: self::enumValue(QualificationType::class, ($row['min_education_level'] ?? '') !== '' ? strtolower($row['min_education_level']) : null, 'min_education_level', $where),
                 requiresWorkPermit: self::toBool($row['requires_work_permit'] ?? ''),
                 requiredCredentials: self::splitList($row['required_credentials'] ?? ''),
                 salaryMinCents: self::moneyToCents($row['salary_min'] ?? ''),
@@ -132,8 +145,8 @@ class CsvImportSource implements JobSourceInterface
                 requirements: self::splitList($row['requirements'] ?? ''),
                 requiredSkills: self::splitList($row['required_skills'] ?? ''),
                 preferredSkills: self::splitList($row['preferred_skills'] ?? ''),
-                postedAt: $row['posted_at'] ?: null,
-                closesAt: $row['closes_at'] ?: null,
+                postedAt: self::dateValue($row['posted_at'] ?: null, 'posted_at', $where),
+                closesAt: self::dateValue($row['closes_at'] ?: null, 'closes_at', $where),
                 applyUrl: $row['apply_url'] ?: null,
                 rawPayload: ['file' => $filename, 'line' => $lineNumber],
             );
@@ -162,5 +175,51 @@ class CsvImportSource implements JobSourceInterface
     private static function splitList(string $value): array
     {
         return array_values(array_filter(array_map('trim', explode('|', $value))));
+    }
+
+    /**
+     * A backed-enum value for a CSV cell, or a clear error naming the file, line
+     * and column. Accepted values are the enum's backing strings (e.g. "permanent").
+     *
+     * @template T of BackedEnum
+     * @param class-string<T> $enum
+     */
+    private static function enumValue(string $enum, ?string $value, string $column, string $where): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $normalized = strtolower(str_replace([' ', '-'], '_', trim($value)));
+        if ($enum::tryFrom($normalized) === null) {
+            $allowed = implode(', ', array_map(fn (\BackedEnum $c) => $c->value, $enum::cases()));
+            throw new RuntimeException("{$where}: {$column} \"{$value}\" is not one of: {$allowed}");
+        }
+
+        return $normalized;
+    }
+
+    /** An ISO date string for a CSV cell (accepts d/m/Y and Y-m-d), or a clear error. */
+    private static function dateValue(?string $value, string $column, string $where): ?string
+    {
+        if ($value === null || trim($value) === '') {
+            return null;
+        }
+
+        foreach (['Y-m-d', 'd/m/Y', 'Y-m-d H:i:s'] as $format) {
+            try {
+                $date = Carbon::createFromFormat($format, trim($value));
+            } catch (\Throwable) {
+                continue;
+            }
+
+            // createFromFormat silently rolls "31/13/2026" over into 2027; only a
+            // value that round-trips through the same format is a real date.
+            if ($date->format($format) === trim($value)) {
+                return $date->startOfDay()->toDateTimeString();
+            }
+        }
+
+        throw new RuntimeException("{$where}: {$column} \"{$value}\" is not a date (use YYYY-MM-DD)");
     }
 }

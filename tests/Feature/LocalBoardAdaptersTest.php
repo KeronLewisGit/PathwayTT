@@ -85,7 +85,12 @@ test('caribbeanjobs cards become local T&T listings with excerpts only, and pagi
         ->and($first->applyUrl)->toBe('https://www.caribbeanjobs.com/Customer-Service-Agent-Job-237908.aspx')
         ->and($first->postedAt)->toStartWith('2026-09-02')
         ->and($first->description)->toContain('excerpt shown here')
-        ->and($first->requiredSkills)->toContain('Customer Service');
+        ->and($first->requiredSkills)->toContain('Customer Service')
+        // Cards carry no category: industry and employment type come from the title/excerpt,
+        // otherwise every local listing vanishes under an industry filter.
+        ->and($first->industrySlug)->toBe('bpo-contact-centre')
+        ->and($dtos[1]->industrySlug)->toBe('tourism-hospitality')
+        ->and($dtos[2]->industrySlug)->toBe('energy-petrochemicals');
 
     // Index page 1 + robots only — page 2 was fetched (empty) and stopped there.
     Http::assertSentCount(3);
@@ -180,4 +185,35 @@ test('local boards run daily through job:sync and are off by default where terms
     // Disabled sources never run.
     $this->artisan('job:sync', ['--source' => 'jobstt'])->assertSuccessful();
     expect(JobSyncRun::query()->where('source', 'jobstt')->exists())->toBeFalse();
+});
+
+test('local-board titles classify into T&T industries and employment types', function () {
+    $industry = new ReflectionMethod(App\Services\JobSources\HtmlBoardSource::class, 'industryFromTitle');
+    $employment = new ReflectionMethod(App\Services\JobSources\HtmlBoardSource::class, 'employmentFromTitle');
+
+    // Real titles from the live CaribbeanJobs feed.
+    $cases = [
+        'Senior Officer Platform Engineering' => 'ict-software',
+        'Financial Accountant' => 'professional-services-accountinglegalconsulting',
+        'Project Engineer' => 'construction',
+        'Field Sales Agent' => 'distribution-retail',
+        'Temporary Administrative Assistant' => 'professional-services-accountinglegalconsulting',
+        'Business Analyst I - Remote/Work from Home (3 month Temporary Contract)' => 'ict-software',
+        'Registered Nurse' => 'healthcare',
+        'Server Administrator' => 'ict-software',
+        'Restaurant Server' => 'tourism-hospitality',
+        'Offshore Rig Electrician' => 'energy-petrochemicals',
+        'Security Officer' => null,
+    ];
+
+    foreach ($cases as $title => $expected) {
+        expect($industry->invoke(null, $title))->toBe($expected, "industry for '{$title}'");
+    }
+
+    expect($industry->invoke(null, 'Senior Process Engineer', 'onshore and offshore operations'))->toBe('energy-petrochemicals')
+        ->and($employment->invoke(null, 'Temporary Administrative Assistant'))->toBe('temporary')
+        ->and($employment->invoke(null, 'Business Analyst (3 month Temporary Contract)'))->toBe('temporary')
+        ->and($employment->invoke(null, 'Accountant - Contract'))->toBe('contract')
+        ->and($employment->invoke(null, 'Permanent Driver'))->toBe('permanent')
+        ->and($employment->invoke(null, 'Accountant'))->toBeNull();
 });

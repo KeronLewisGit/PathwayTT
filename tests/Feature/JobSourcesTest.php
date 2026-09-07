@@ -78,7 +78,10 @@ test('ingestor upserts on source + source_job_id and resolves skills via aliases
         applyUrl: 'https://example.com/apply',
     );
 
-    expect($ingestor->ingest($dto))->toBe(['created' => true]);
+    expect($ingestor->ingest($dto))->toBe(['created' => true, 'changed' => true]);
+
+    // Re-ingesting an identical feed is a no-op: no "updated" count, no recompute fan-out.
+    expect($ingestor->ingest($dto))->toBe(['created' => false, 'changed' => false]);
 
     $listing = JobListing::query()->firstOrFail();
     expect($listing->industry->slug)->toBe('ict-software')
@@ -97,11 +100,62 @@ test('ingestor upserts on source + source_job_id and resolves skills via aliases
     $dto->requiredSkills = ['PHP'];
     $dto->preferredSkills = [];
 
-    expect($ingestor->ingest($dto))->toBe(['created' => false])
+    expect($ingestor->ingest($dto))->toBe(['created' => false, 'changed' => true])
         ->and(JobListing::count())->toBe(1)
         ->and($listing->fresh()->title)->toBe('Junior PHP Developer')
         ->and($listing->skills()->pluck('slug')->all())->toBe(['php'])
         ->and(Company::count())->toBe(1);
+});
+
+test('ingestor fits over-long strings to their columns and keeps non-Latin employers apart', function () {
+    $ingestor = app(JobIngestor::class);
+    $countries = implode(', ', array_fill(0, 60, 'Trinidad and Tobago'));
+
+    $ingestor->ingest(new JobDto(
+        source: 'himalayas', sourceJobId: 'long-1', title: str_repeat('Engineer ', 40),
+        companyName: '北京科技有限公司', locationText: 'Remote — '.$countries, salaryCurrency: 'US Dollars',
+    ));
+    $ingestor->ingest(new JobDto(
+        source: 'himalayas', sourceJobId: 'long-2', title: 'Second', companyName: 'شركة التقنية',
+    ));
+
+    $listing = JobListing::query()->where('source_job_id', 'long-1')->firstOrFail();
+    expect(mb_strlen($listing->title))->toBeLessThanOrEqual(255)
+        ->and(mb_strlen($listing->location_text))->toBeLessThanOrEqual(255)
+        ->and($listing->location_text)->toStartWith('Remote — Trinidad')
+        ->and($listing->salary_currency)->toBeNull()   // "US Dollars" is not a 3-letter code
+        ->and(Company::count())->toBe(2)                 // slugs never collapse onto ''
+        ->and(Company::query()->pluck('slug')->filter(fn ($s) => $s === '')->count())->toBe(0);
+});
+
+test('csv import names the file, line and column for an invalid enum or date', function () {
+    $header = 'title,work_arrangement,employment_type,posted_at';
+
+    expect(fn () => iterator_to_array((new CsvImportSource)->parse("{$header}\nClerk,on_premises,Full-time,2026-09-01\n", 'jobs.csv'), false))
+        ->toThrow(RuntimeException::class, 'jobs.csv line 2: employment_type "Full-time" is not one of: permanent, contract, temporary');
+
+    expect(fn () => iterator_to_array((new CsvImportSource)->parse("{$header}\nClerk,on_premises,permanent,31/13/2026\n", 'jobs.csv'), false))
+        ->toThrow(RuntimeException::class, 'jobs.csv line 2: posted_at "31/13/2026" is not a date');
+
+    $ok = iterator_to_array((new CsvImportSource)->parse("{$header}\nClerk,On-Premises,Permanent,02/09/2026\n", 'jobs.csv'), false);
+    expect($ok[0]->workArrangement)->toBe('on_premises')
+        ->and($ok[0]->employmentType)->toBe('permanent')
+        ->and($ok[0]->postedAt)->toStartWith('2026-09-02');
+});
+
+test('board descriptions keep text after a literal "<" and drop script blocks', function () {
+    $text = new ReflectionMethod(App\Services\JobSources\RemoteBoardSource::class, 'text');
+
+    expect($text->invoke(null, '<p>C++ dev, &lt;3 years exp required. Salary &lt; 5000 &gt; 4000.</p><script>alert(1)</script><p>Apply now &amp; join.</p>'))
+        ->toBe("C++ dev, <3 years exp required. Salary < 5000 > 4000.\nApply now & join.");
+});
+
+test('array-valued query strings are dropped instead of crashing #[Url] properties', function () {
+    $user = App\Models\User::factory()->create(['email_verified_at' => now()]);
+
+    $this->actingAs($user)->get('/jobs?q[]=x&industry[]=1&arrangement=remote_international')->assertOk();
+    $this->actingAs($user)->get('/matches?showIneligible[]=1')->assertOk();
+    $this->actingAs($user)->get('/applications?status[]=saved')->assertOk();
 });
 
 // ── job:sync command ─────────────────────────────────────────────────
@@ -131,12 +185,15 @@ test('job:sync ingests csv inbox files, archives them and logs a run per source'
     Storage::disk('local')->assertMissing('import/jobs/batch.csv');
     expect(Storage::disk('local')->files('import/jobs/processed'))->toHaveCount(1);
 
-    // Re-importing the same file is an update, not a duplicate.
+    // Re-importing the same file is neither a duplicate nor a change: nothing
+    // differs, so nothing counts as updated and no recompute fans out.
     Storage::disk('local')->put('import/jobs/batch.csv', file_get_contents(base_path('docs/job-import-template.csv')));
     $this->artisan('job:sync', ['--source' => 'csv'])->assertSuccessful();
 
+    $rerun = JobSyncRun::query()->where('source', 'csv')->latest('id')->first();
     expect(JobListing::count())->toBe(2)
-        ->and(JobSyncRun::query()->where('source', 'csv')->latest('id')->value('updated_count'))->toBe(2);
+        ->and($rerun->fetched_count)->toBe(2)
+        ->and($rerun->updated_count)->toBe(0);
 });
 
 test('job:sync records a source failure without aborting the run', function () {

@@ -32,6 +32,13 @@ class ParseResumeJob implements ShouldQueue
 
         $path = Storage::disk(config('resume.disk'))->path($this->resume->path);
         $text = $extractor->extract($path, $this->resume->mime_type);
+
+        // A scanned/image-only PDF extracts to nothing. Reporting that as "parsed"
+        // would hand the user an empty profile with no explanation.
+        if (trim($text) === '') {
+            throw new \RuntimeException('No text could be read from this file. If it is a scanned PDF, please upload a text-based PDF or a DOCX.');
+        }
+
         $structured = $structurer->structure($text);
 
         $this->persist($structured);

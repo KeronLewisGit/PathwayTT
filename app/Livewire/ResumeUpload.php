@@ -113,6 +113,17 @@ class ResumeUpload extends Component
 
     public function getResumesProperty(): Collection
     {
+        // A parse killed by a fatal error or the host's execution limit never
+        // reaches failed(), so the row would spin as "Parsing…" forever. Anything
+        // still pending/processing after ten minutes is treated as failed.
+        Auth::user()->resumes()
+            ->whereIn('parse_status', [ParseStatus::Pending->value, ParseStatus::Processing->value])
+            ->where('updated_at', '<', now()->subMinutes(10))
+            ->update([
+                'parse_status' => ParseStatus::Failed->value,
+                'parse_error' => 'Parsing did not complete (the server stopped it). Please upload the file again; a smaller or text-based PDF helps.',
+            ]);
+
         return Auth::user()->resumes()->latest()->get();
     }
 

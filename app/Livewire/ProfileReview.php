@@ -202,8 +202,13 @@ class ProfileReview extends Component
         $this->queueRecompute();
     }
 
-    public function updateSkillProficiency(int $skillId, int $proficiency): void
+    public function updateSkillProficiency(int $skillId, ?int $proficiency): void
     {
+        // The "rate" placeholder option submits an empty value (parseInt('') → null).
+        if ($proficiency === null) {
+            return;
+        }
+
         $this->profile()->skills()->updateExistingPivot($skillId, [
             'proficiency' => max(1, min(5, $proficiency)),
             'is_user_edited' => true,
@@ -224,8 +229,11 @@ class ProfileReview extends Component
         $this->validate([
             "workRows.{$id}.employer" => ['required', 'string', 'max:190'],
             "workRows.{$id}.title" => ['required', 'string', 'max:190'],
-            "workRows.{$id}.started_at" => ['nullable', 'date'],
-            "workRows.{$id}.ended_at" => ['nullable', 'date'],
+            "workRows.{$id}.started_at" => ['nullable', 'date', 'before_or_equal:today'],
+            "workRows.{$id}.ended_at" => ['nullable', 'date', "after_or_equal:workRows.{$id}.started_at"],
+        ], [
+            "workRows.{$id}.ended_at.after_or_equal" => 'The end date must be on or after the start date.',
+            "workRows.{$id}.started_at.before_or_equal" => 'The start date cannot be in the future.',
         ]);
 
         $data = $this->workRows[$id];
