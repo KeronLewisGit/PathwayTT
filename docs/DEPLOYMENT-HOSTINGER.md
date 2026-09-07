@@ -190,8 +190,45 @@ curl -sI https://blue-snake-221127.hostingersite.com/up | head -1
 | "requires PHP >= 8.3" over SSH | Shell `php` is 8.2 | `alias php=/opt/alt/php83/usr/bin/php` |
 | Unstyled page | Assets not found | `ls public/build/manifest.json`; rebuild the zip if missing |
 | Links point to the wrong host | `APP_URL` wrong | Fix `.env`, then `php artisan optimize:clear && php artisan optimize` |
+| Registration returns 500; log says SMTP `554 Client host rejected` or `535 authentication failed` | `MAIL_USERNAME`/`MAIL_PASSWORD` are `null` or wrong, or the from-address is not a mailbox on this account | Put real mailbox credentials in `.env`, or `MAIL_MAILER=log` until a mailbox exists; then `php artisan optimize:clear && php artisan optimize` |
+| `git pull` says "not a git repository" | `public_html` came from the zip, not a clone | One-time setup in section 8A |
 
 ## 8. Updating to a new version
+
+Two workflows. Git is simpler once set up; the zip needs no GitHub access from the server.
+
+### A. Git pull (recommended)
+
+One-time setup on the server, turning `public_html` into a checkout of the repo. Nothing
+untracked (`.env`, `vendor/`, uploaded resumes) is touched:
+
+```bash
+cd ~/domains/blue-snake-221127.hostingersite.com/public_html
+git init -b main
+git remote add origin https://github.com/KeronLewisGit/PathwayTT.git
+git fetch origin main
+git reset --hard origin/main
+```
+
+If the repository is private, GitHub prompts for a username and a personal access token
+(GitHub → Settings → Developer settings → Fine-grained tokens, read access to this repo).
+
+Each release, on your PC: `npm run build`, commit, `git push`. The compiled assets in
+`public/build` are tracked precisely so the server needs no Node. On the server:
+
+```bash
+alias php=/opt/alt/php83/usr/bin/php
+cd ~/domains/blue-snake-221127.hostingersite.com/public_html
+php artisan down
+git pull
+php $(which composer) install --no-dev --optimize-autoloader --no-interaction   # only when composer.lock changed
+php artisan migrate --force
+php artisan db:seed --force
+php artisan optimize:clear && php artisan optimize
+php artisan up
+```
+
+### B. Zip upload
 
 On your PC: `powershell -ExecutionPolicy Bypass -File scripts\build-hostinger.ps1`.
 
