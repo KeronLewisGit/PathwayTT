@@ -128,6 +128,15 @@ class RuleBasedStructurer implements ResumeStructurerInterface
     }
 
     /**
+     * Words a bullet point starts with and a job title never does. A line that
+     * opens with one of these is an achievement, not a role.
+     */
+    private const BULLET_VERBS = 'performed|developed|planned|managed|assisted|provided|created|tutored|worked|handled|led|built|designed|maintained|supported|generated|conducted|coordinated|prepared|implemented|delivered|responsible|collaborated|ensured|organi[sz]ed|trained|oversaw|supervised|analy[sz]ed|reviewed|processed|monitored|reduced|increased|improved|achieved|completed|resolved|installed|configured|tested|wrote|produced|liaised|communicated|participated|contributed|helped|served|drove|launched|streamlined|negotiated|scheduled|recorded|reconciled|audited|assessed|researched|presented|taught|mentored|recruited|hired|advised|administered|operated|repaired|cleaned|cooked|sold|greeted';
+
+    /** Employer-looking suffixes and institution words ("Tucker Energy Services Ltd."). */
+    private const EMPLOYER_MARKERS = 'ltd|limited|inc|llc|plc|co|corp|corporation|company|group|holdings|bank|university|uwi|utt|costaatt|ministry|hospital|school|college|institute|services|solutions|technologies|systems|enterprises|associates|agency|authority|commission|board|foundation|trust|centre|center|store|restaurant|hotel|clinic|church|council|credit union|partners|consulting|industries|international|caribbean|trinidad|tobago|tstt|ngc|petrotrin|heritage|bptt|shell|republic|scotiabank|rbc|first citizens|massy|ansa|digicel|flow|unicomer|courts|nlcb|wasa|t&tec|ttpost|port authority|govt|government';
+
+    /**
      * @return array<int, array{employer: string, title: string, started_at: ?string, ended_at: ?string, is_current: bool, description: ?string}>
      */
     public function parseExperience(string $section): array
@@ -136,27 +145,37 @@ class RuleBasedStructurer implements ResumeStructurerInterface
             return [];
         }
 
+        // Line-based: a role starts at a line that looks like a role header (see
+        // roleHeaderAt) and runs until the next one. Bullet points, sentences and
+        // stray fragments can therefore never become a "job", whatever blank lines
+        // the PDF extractor put around them.
+        $lines = array_values(array_filter(array_map('trim', explode("\n", $section)), fn (string $l) => $l !== ''));
         $entries = [];
+        $count = count($lines);
+        $i = 0;
 
-        // Blocks are separated by blank lines; a block usually opens with a
-        // "Title — Employer" or "Title at Employer" line plus a date range.
-        foreach (preg_split("/\n{2,}/", $section) ?: [] as $block) {
-            $block = trim($block);
-            if ($block === '') {
-                continue;
-            }
-
-            $blockLines = array_values(array_filter(array_map('trim', explode("\n", $block))));
-            $dates = $this->parseDateRange($block);
-            $header = $this->parseRoleHeader($blockLines);
-
+        while ($i < $count) {
+            $header = $this->roleHeaderAt($lines, $i);
             if ($header === null) {
+                $i++;
+
                 continue;
             }
 
-            $description = implode("\n", array_slice($blockLines, $header['lines_used']));
-            // Drop the date line from the description if it is all that remains.
-            $description = trim(preg_replace($this->dateRangePattern(), '', $description) ?? $description, " \n-–—|,");
+            $j = $i + $header['lines_used'];
+            $dates = $this->parseDateRange(implode(' ', array_slice($lines, $i, $header['lines_used'])));
+
+            // A bare date line directly under the header belongs to it.
+            if ($dates['start'] === null && isset($lines[$j]) && $this->isDateLine($lines[$j])) {
+                $dates = $this->parseDateRange($lines[$j]);
+                $j++;
+            }
+
+            $description = [];
+            while ($j < $count && $this->roleHeaderAt($lines, $j) === null) {
+                $description[] = ltrim($lines[$j], " \t•▪◦●○*-–—");
+                $j++;
+            }
 
             $entries[] = [
                 'employer' => $header['employer'],
@@ -164,52 +183,134 @@ class RuleBasedStructurer implements ResumeStructurerInterface
                 'started_at' => $dates['start'],
                 'ended_at' => $dates['end'],
                 'is_current' => $dates['current'],
-                'description' => $this->trimToLength($description ?: null, 2000),
+                'description' => $this->trimToLength(implode("\n", $description) ?: null, 2000),
             ];
+
+            $i = $j;
         }
 
         return $entries;
     }
 
     /**
-     * @param list<string> $blockLines
+     * Is there a role header starting at line $i? Accepted shapes:
+     *   "Title at Employer"            "Title — Employer"   "Title | Employer"
+     *   "Title, Employer Ltd."          two lines: Title / Employer (either order)
+     * plus, for the two-line shape, either a date range within the next two
+     * lines or an employer-looking second line — real roles have one or both.
+     *
+     * @param list<string> $lines
      * @return ?array{title: string, employer: string, lines_used: int}
      */
-    private function parseRoleHeader(array $blockLines): ?array
+    private function roleHeaderAt(array $lines, int $i): ?array
     {
-        if ($blockLines === []) {
+        $first = $lines[$i] ?? '';
+        if ($first === '' || $this->isBullet($first) || $this->isDateLine($first)) {
             return null;
         }
 
-        $first = preg_replace($this->dateRangePattern(), '', $blockLines[0]) ?? $blockLines[0];
-        $first = trim($first, " \t•*-–—|,()");
-
-        // "Title at Employer" / "Title — Employer" / "Title | Employer" / "Title, Employer"
-        if (preg_match('/^(?<title>.{2,80}?)\s+(?:at|@)\s+(?<employer>.{2,80})$/iu', $first, $m)
-            || preg_match('/^(?<title>.{2,80}?)\s*(?:—|–|\||,)\s*(?<employer>.{2,80})$/u', $first, $m)) {
-            return ['title' => trim($m['title']), 'employer' => trim($m['employer']), 'lines_used' => 1];
+        $firstNoDate = $this->stripDates($first);
+        if (! $this->isTitleLike($firstNoDate) && ! $this->isEmployerLike($firstNoDate)) {
+            return null;
         }
 
-        // Two-line header: title on line 1, employer on line 2.
-        if (isset($blockLines[1])) {
-            $second = preg_replace($this->dateRangePattern(), '', $blockLines[1]) ?? $blockLines[1];
-            $second = trim($second, " \t•*-–—|,()");
-
-            if ($first !== '' && $second !== ''
-                && mb_strlen($first) <= 80 && mb_strlen($second) <= 80
-                && ! str_contains($first.$second, '@')) {
-                return ['title' => $first, 'employer' => $second, 'lines_used' => 2];
-            }
+        // "Title at Employer" / "Title @ Employer"
+        if (preg_match('/^(?<title>.{2,80}?)\s+(?:at|@)\s+(?<employer>.{2,80})$/iu', $firstNoDate, $m)
+            && $this->isTitleLike($m['title']) && $this->isTitleLike($m['employer'])) {
+            return ['title' => trim($m['title']), 'employer' => trim($m['employer'], " ,."), 'lines_used' => 1];
         }
 
-        return null;
+        // "Title — Employer" / "Title | Employer" / "Title, Employer Ltd."
+        if (preg_match('/^(?<a>.{2,80}?)\s*(?<sep>—|–|\||,)\s*(?<b>.{2,80})$/u', $firstNoDate, $m)
+            && $this->isTitleLike($m['a']) && $this->isTitleLike($m['b'])
+            && ($m['sep'] !== ',' || $this->isEmployerLike($m['b']) || $this->isEmployerLike($m['a']))) {
+            [$title, $employer] = $this->isEmployerLike($m['a']) && ! $this->isEmployerLike($m['b'])
+                ? [$m['b'], $m['a']]
+                : [$m['a'], $m['b']];
+
+            return ['title' => trim($title), 'employer' => trim($employer, " ,."), 'lines_used' => 1];
+        }
+
+        // Two-line header: Title / Employer (or Employer / Title).
+        $second = isset($lines[$i + 1]) ? $this->stripDates($lines[$i + 1]) : '';
+        if ($second === '' || $this->isBullet($lines[$i + 1]) || ! $this->isTitleLike($second)) {
+            return null;
+        }
+
+        $hasDate = $this->hasDateRange($lines[$i])
+            || $this->hasDateRange($lines[$i + 1])
+            || (isset($lines[$i + 2]) && $this->isDateLine($lines[$i + 2]));
+
+        if (! $hasDate && ! $this->isEmployerLike($second) && ! $this->isEmployerLike($firstNoDate)) {
+            return null; // two short lines with no date and no employer: not a role
+        }
+
+        [$title, $employer] = $this->isEmployerLike($firstNoDate) && ! $this->isEmployerLike($second)
+            ? [$second, $firstNoDate]
+            : [$firstNoDate, $second];
+
+        return ['title' => trim($title), 'employer' => trim($employer, " ,."), 'lines_used' => 2];
     }
 
+    /** Short, title-cased-ish, no sentence punctuation, does not open with an action verb. */
+    private function isTitleLike(string $text): bool
+    {
+        $text = trim($text, " \t,;:-–—|()");
+        if ($text === '' || mb_strlen($text) > 80 || str_word_count($text) > 8) {
+            return false;
+        }
+        if (str_ends_with($text, '.') && ! preg_match('/\b(?:ltd|inc|co|corp)\.$/iu', $text)) {
+            return false;
+        }
+        if (preg_match('/^(?:'.self::BULLET_VERBS.')\b/iu', $text)) {
+            return false;
+        }
+
+        // Titles are Title Case or CAPS; a sentence fragment capitalises only its first word.
+        $words = preg_split('/\s+/', $text) ?: [];
+        $capitalised = count(array_filter($words, fn (string $w) => preg_match('/^[A-Z0-9(]/u', $w)));
+
+        return $capitalised >= max(1, (int) ceil(count($words) / 2));
+    }
+
+    private function isEmployerLike(string $text): bool
+    {
+        return (bool) preg_match('/\b(?:'.self::EMPLOYER_MARKERS.')\b\.?/iu', $text);
+    }
+
+    private function isBullet(string $line): bool
+    {
+        return (bool) preg_match('/^(?:[•▪◦●○*\-–—]\s*|o\s+)/u', $line);
+    }
+
+    private function isDateLine(string $line): bool
+    {
+        return $this->hasDateRange($line) && mb_strlen(trim($this->stripDates($line), " \t|,()-–—")) <= 12;
+    }
+
+    private function hasDateRange(string $text): bool
+    {
+        return (bool) preg_match($this->dateRangePattern(), $text);
+    }
+
+    private function stripDates(string $text): string
+    {
+        $text = preg_replace($this->dateRangePattern(), '', $text) ?? $text;
+        $text = preg_replace('/\(\s*\)/', '', $text) ?? $text;
+
+        return trim($text, " \t•*-–—|,()");
+    }
+
+    /**
+     * "2019 - Present", "Jan 2019 – Dec 2021", "July 1, 2021 – Present",
+     * "01/2019 - 12/2021", "2019 to date".
+     */
     private function dateRangePattern(): string
     {
         $months = self::MONTHS;
+        $date = fn (string $name) => "(?:(?:{$months})\\.?\\s+(?:\\d{1,2}(?:st|nd|rd|th)?,?\\s+)?|\\d{1,2}\\s*[\\/.-]\\s*)?(?<{$name}>(?:19|20)\\d{2})";
 
-        return "/(?:(?:{$months})\\.?\\s+)?(?<y1>(?:19|20)\\d{2})\\s*(?:-|–|—|to|until)\\s*(?:(?:(?:{$months})\\.?\\s+)?(?<y2>(?:19|20)\\d{2})|(?<now>present|current|now|to\\s*date))/iu";
+        return '/'.$date('y1')."\\s*(?:-|–|—|to|until)\\s*(?:".$date('y2').'|(?<now>present|current|now|ongoing|to\\s*date|date))/iu';
     }
 
     /** @return array{start: ?string, end: ?string, current: bool} */

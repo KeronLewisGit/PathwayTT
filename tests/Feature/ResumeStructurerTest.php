@@ -107,3 +107,88 @@ test('certifications parse name, issuer and year', function () {
         ->and($structured->certifications[0]['issuer'])->toBe('Amazon Web Services')
         ->and($structured->certifications[0]['issued_at'])->toBe('2022-12-31');
 });
+
+test('bullet points and fragments never become jobs, whatever blank lines surround them', function () {
+    // Shaped like a real upload: a "Title, Employer Month D, YYYY – Present" line, then
+    // achievements the PDF extractor separated with blank lines and split at commas.
+    $text = implode("\n", [
+        'Darrion Example',
+        'darrion@example.com',
+        '',
+        'Professional Summary',
+        'Driven software developer with hands-on experience.',
+        '',
+        'Experience',
+        '',
+        'Junior Programmer, Tucker Energy Services Ltd. July 1, 2021 – Present',
+        '',
+        '• Performed maintenance on several high priority systems, such as the',
+        'billing platform.',
+        '',
+        'Planned multiple internal events',
+        'Generated KPAs for all employees',
+        '',
+        'Accomplishments',
+        'Back-to-back 1st place in the internal hackathon',
+        '',
+        'DCIT help desk volunteer (1 year',
+        '6-8 hours a week assisting students',
+        'Tutored students',
+        'Provided assignment assistance.',
+        '',
+        'IT Support Intern',
+        'Republic Financial Holdings Ltd',
+        'Jun 2020 - Aug 2020',
+        'Resolved tickets for 300 staff.',
+        '',
+        'Education',
+        'BSc in Computer Science',
+        'University of the West Indies',
+        '2021',
+    ]);
+
+    $structured = app(RuleBasedStructurer::class)->structure($text);
+
+    expect($structured->workHistories)->toHaveCount(2);
+    [$programmer, $intern] = $structured->workHistories;
+
+    expect($programmer['title'])->toBe('Junior Programmer')
+        ->and($programmer['employer'])->toBe('Tucker Energy Services Ltd')
+        ->and($programmer['started_at'])->toBe('2021-01-01')
+        ->and($programmer['is_current'])->toBeTrue()
+        ->and($programmer['description'])->toContain('Performed maintenance')
+        ->and($programmer['description'])->toContain('Tutored students')
+        ->and($intern['title'])->toBe('IT Support Intern')
+        ->and($intern['employer'])->toBe('Republic Financial Holdings Ltd')
+        ->and($intern['started_at'])->toBe('2020-01-01')
+        ->and($intern['ended_at'])->toBe('2020-12-31')
+        ->and($intern['description'])->toBe('Resolved tickets for 300 staff.');
+
+    $titles = array_column($structured->workHistories, 'title');
+    expect($titles)->not->toContain('Accomplishments', 'Tutored students', 'Planned multiple internal events', 'DCIT help desk volunteer (1 year');
+});
+
+test('employer-first and numeric-date headers are read too', function () {
+    $text = implode("\n", [
+        'Work History',
+        'Massy Stores Ltd',
+        'Cashier',
+        '03/2018 – 11/2019',
+        '- Handled cash and card payments.',
+        '',
+        'Sales Representative | Digicel',
+        '2020 to date',
+    ]);
+
+    $entries = app(RuleBasedStructurer::class)->parseExperience(implode("\n", array_slice(explode("\n", $text), 1)));
+
+    expect($entries)->toHaveCount(2)
+        ->and($entries[0]['title'])->toBe('Cashier')
+        ->and($entries[0]['employer'])->toBe('Massy Stores Ltd')
+        ->and($entries[0]['started_at'])->toBe('2018-01-01')
+        ->and($entries[0]['ended_at'])->toBe('2019-12-31')
+        ->and($entries[0]['description'])->toBe('Handled cash and card payments.')
+        ->and($entries[1]['title'])->toBe('Sales Representative')
+        ->and($entries[1]['employer'])->toBe('Digicel')
+        ->and($entries[1]['is_current'])->toBeTrue();
+});
