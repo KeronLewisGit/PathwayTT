@@ -26,7 +26,7 @@ class ReclassifyLocalListingsCommand extends Command
         $updated = 0;
 
         JobListing::query()
-            ->whereIn('source', ['caribbeanjobs', 'jobstt', 'employtt'])
+            ->whereIn('source', ['caribbeanjobs', 'trinidadjob', 'jobstt', 'employtt'])
             ->when(! $this->option('all'), fn ($q) => $q->where(fn ($q) => $q->whereNull('industry_id')->orWhereNull('employment_type')))
             ->chunkById(200, function ($listings) use ($industryIds, &$updated) {
                 foreach ($listings as $listing) {

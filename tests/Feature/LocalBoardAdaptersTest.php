@@ -231,3 +231,45 @@ test('jobs:reclassify-local back-fills industry and employment type on old local
         ->and($b->fresh()->employment_type?->value)->toBe('temporary')
         ->and($remote->fresh()->industry_id)->toBeNull(); // remote boards are not touched
 });
+
+test('trinidadjob listings come from the public WordPress API with categories mapped to industries', function () {
+    $this->seed([IndustrySeeder::class, SkillSeeder::class]);
+    config(['jobsources.remote.boards.trinidadjob.enabled' => true]);
+    Http::fake([
+        'trinidadjob.com/wp-json/wp/v2/job-listings*' => Http::response(file_get_contents(base_path('tests/Fixtures/localboards/trinidadjob-api.json'))),
+    ]);
+
+    $dtos = crawlAll(app(App\Services\JobSources\TrinidadJobSource::class));
+
+    expect($dtos)->toHaveCount(2);
+    $clerk = $dtos[0];
+    expect($clerk->source)->toBe('trinidadjob')
+        ->and($clerk->sourceJobId)->toBe('4227')
+        ->and($clerk->title)->toBe('Facilities Administration Clerk')
+        ->and($clerk->country)->toBe('TT')
+        ->and($clerk->workArrangement)->toBe('on_premises')
+        ->and($clerk->employmentType)->toBe('permanent')            // "Full Time"
+        ->and($clerk->industrySlug)->toBe('construction')           // from the board's own category
+        ->and($clerk->locationText)->toBe('Bon Air Gdns, Arouca, Trinidad and Tobago')
+        ->and($clerk->postedAt)->toStartWith('2026-09-06')
+        ->and($clerk->applyUrl)->toStartWith('https://trinidadjob.com/job/')
+        ->and($clerk->description)->toContain('Facilities Administration Clerk')
+        ->and($clerk->rawPayload['region'])->toBe('Arima/ Sangre Grande');
+
+    expect($dtos[1]->seniority)->toBe('manager');                     // "Management/ Senior Management"
+
+    // One short page (2 < per_page) means no second request.
+    Http::assertSentCount(1);
+});
+
+test('trinidadjob skips listings the employer marked as filled', function () {
+    $this->seed([IndustrySeeder::class, SkillSeeder::class]);
+    config(['jobsources.remote.boards.trinidadjob.enabled' => true]);
+    $posts = json_decode(file_get_contents(base_path('tests/Fixtures/localboards/trinidadjob-api.json')), true);
+    $posts[0]['meta']['_filled'] = 1;
+    Http::fake(['trinidadjob.com/*' => Http::response(json_encode($posts))]);
+
+    $dtos = crawlAll(app(App\Services\JobSources\TrinidadJobSource::class));
+
+    expect($dtos)->toHaveCount(1)->and($dtos[0]->sourceJobId)->toBe('4228');
+});

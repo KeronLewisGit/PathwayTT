@@ -1,0 +1,113 @@
+[
+    {
+        "id": 4227,
+        "date_gmt": "2026-09-06T20:07:42",
+        "link": "https://trinidadjob.com/job/bon-air-gdns-arouca-trinidad-and-tobago-full-time-facilities-administration-clerk/",
+        "title": {
+            "rendered": "Facilities Administration Clerk"
+        },
+        "content": {
+            "rendered": "<p>FACILITIES ADMINISTRATION CLERK<br />\nJOB TITLE: Facilities Administration Clerk<br />\nJOB REFERENCE NO: HR-F31<br />\nDEPARTMENT: Operations Department<br />\nCREATED / REVISED: 03.08.2026<br />\nREPORTS TO: Facilities Manager/Operations Manager<br />\nSTAFF SUPERVISED: none<br />\nTYPE OF POSITION: Full-time</p>\n<p>JOB SUMMARY<br />\nBranford General Contracting Services Company Limited is seeking a highly organized, dependable and proactive Facilities Administrative Clerk to provide comprehensive administrative and coordination support to our Facilities Management Department. The successful candidate will play an important role in ensuring that departmental records, workforce information, schedules, client documentation and operational reports are accurately maintained and readily available to support effective management and operational decision-making.<br />\nACCOUNTABILITIES<br />\nThe successful candidate will be responsible for:<br />\n* Providing day-to-day administrative support to the Facility Manager and Facilities Management team.<br />\n* Preparing letters, reports, memos, schedules, spreadsheets and other departmental documents.<br />\n* Maintaining accurate physical and ele"
+        },
+        "meta": {
+            "_job_location": "Bon Air Gdns, Arouca, Trinidad and Tobago",
+            "_company_name": "",
+            "_filled": 0,
+            "_remote_position": 0,
+            "_job_salary_currency": "",
+            "_job_salary_unit": "",
+            "_salary_min": "",
+            "_salary_max": "",
+            "_apply_link": ""
+        },
+        "_embedded": {
+            "wp:term": [
+                [
+                    {
+                        "id": 8284,
+                        "name": "Arima/ Sangre Grande",
+                        "taxonomy": "job_listing_region"
+                    }
+                ],
+                [
+                    {
+                        "id": 8300,
+                        "name": "Administrative/ Clerical",
+                        "taxonomy": "job_listing_category"
+                    },
+                    {
+                        "id": 8382,
+                        "name": "Construction / Facilities/ Quantity Surveying",
+                        "taxonomy": "job_listing_category"
+                    }
+                ],
+                [
+                    {
+                        "id": 8245,
+                        "name": "Full Time",
+                        "taxonomy": "job_listing_type"
+                    }
+                ],
+                []
+            ]
+        }
+    },
+    {
+        "id": 4228,
+        "date_gmt": "2026-09-06T20:06:50",
+        "link": "https://trinidadjob.com/job/bon-air-gdns-arouca-trinidad-and-tobago-full-time-facilities-manager/",
+        "title": {
+            "rendered": "Facilities Manager"
+        },
+        "content": {
+            "rendered": "<p>FACILITIES MANAGER<br />\nJOB TITLE: Facilities Manager<br />\nJOB REFERENCE NO: HR-F32<br />\nDEPARTMENT: Operations Department<br />\nCREATED / REVISED: 03.08.2026<br />\nREPORTS TO: Operations Manager/Managing Director<br />\nSTAFF SUPERVISED: 6 directly/106 indirect<br />\nTYPE OF POSITION: Full-time</p>\n<p>JOB SUMMARY<br />\nBranford General Contracting Services Company Limited is seeking a dynamic, experienced and results-driven Facility Manager to lead and manage the Company&#8217;s Facilities Management operations. The successful candidate will be responsible for ensuring the efficient delivery of contracted services across multiple client locations while maintaining high standards of service quality, workforce performance, client satisfaction, safety, compliance and cost control. The Facility Manager will provide strategic and operational leadership to the Facilities Management Department and will be responsible for managing supervisory personnel and overseeing a large, predominantly part-time operational workforce.</p>\n<p>ACCOUNTABILITIES<br />\nThe successful candidate will be responsible for:<br />\n* Providing overall operational leadership and direction for the Facilities Ma"
+        },
+        "meta": {
+            "_job_location": "Bon Air Gdns, Arouca, Trinidad and Tobago",
+            "_company_name": "",
+            "_filled": 0,
+            "_remote_position": 0,
+            "_job_salary_currency": "",
+            "_job_salary_unit": "",
+            "_salary_min": "",
+            "_salary_max": "",
+            "_apply_link": ""
+        },
+        "_embedded": {
+            "wp:term": [
+                [
+                    {
+                        "id": 8284,
+                        "name": "Arima/ Sangre Grande",
+                        "taxonomy": "job_listing_region"
+                    }
+                ],
+                [
+                    {
+                        "id": 8382,
+                        "name": "Construction / Facilities/ Quantity Surveying",
+                        "taxonomy": "job_listing_category"
+                    },
+                    {
+                        "id": 8315,
+                        "name": "Facilities/ Janitorial/ Cleaning",
+                        "taxonomy": "job_listing_category"
+                    },
+                    {
+                        "id": 8322,
+                        "name": "Management/ Senior Management",
+                        "taxonomy": "job_listing_category"
+                    }
+                ],
+                [
+                    {
+                        "id": 8245,
+                        "name": "Full Time",
+                        "taxonomy": "job_listing_type"
+                    }
+                ],
+                []
+            ]
+        }
+    }
+]

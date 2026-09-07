@@ -20,6 +20,7 @@ return [
         App\Services\JobSources\ArbeitnowSource::class,
         // Local T&T boards (HTML crawlers, daily; see docs/LOCAL-BOARDS.md)
         App\Services\JobSources\CaribbeanJobsSource::class,
+        App\Services\JobSources\TrinidadJobSource::class,
         App\Services\JobSources\JobsTtSource::class,
         App\Services\JobSources\EmployTtSource::class,
     ],
@@ -42,6 +43,7 @@ return [
         'remoteok' => ['label' => 'Remote OK', 'url' => 'https://remoteok.com'],
         'arbeitnow' => ['label' => 'Arbeitnow', 'url' => 'https://www.arbeitnow.com'],
         'caribbeanjobs' => ['label' => 'CaribbeanJobs.com', 'url' => 'https://www.caribbeanjobs.com'],
+        'trinidadjob' => ['label' => 'TrinidadJob.com', 'url' => 'https://trinidadjob.com'],
         'jobstt' => ['label' => 'JobsTT', 'url' => 'https://www.jobstt.com'],
         'employtt' => ['label' => 'EmployTT (Government of T&T)', 'url' => 'https://employtt.gov.tt'],
     ],
@@ -170,6 +172,16 @@ return [
                 'max_pages' => (int) env('JOBSOURCE_CARIBBEANJOBS_PAGES', 4), // 25 listings per page
                 'min_interval_minutes' => 1440,
                 'delay_ms' => 1500,
+            ],
+            // TrinidadJob.com publishes its listings through the standard public
+            // WordPress REST API (no terms of use exist; robots.txt allows all —
+            // read 2026-09-07). Polled twice a day at most.
+            'trinidadjob' => [
+                'enabled' => (bool) env('JOBSOURCE_TRINIDADJOB', true),
+                'url' => 'https://trinidadjob.com/wp-json/wp/v2/job-listings',
+                'per_page' => 100,
+                'max_pages' => (int) env('JOBSOURCE_TRINIDADJOB_PAGES', 2),
+                'min_interval_minutes' => 720,
             ],
             'jobstt' => [
                 'enabled' => (bool) env('JOBSOURCE_JOBSTT', false), // terms forbid robots/aggregation — permission needed

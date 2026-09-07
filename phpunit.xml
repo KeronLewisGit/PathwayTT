@@ -44,6 +44,7 @@
         <env name="JOBSOURCE_REMOTEOK" value="false" force="true"/>
         <env name="JOBSOURCE_ARBEITNOW" value="false" force="true"/>
         <env name="JOBSOURCE_CARIBBEANJOBS" value="false" force="true"/>
+        <env name="JOBSOURCE_TRINIDADJOB" value="false" force="true"/>
         <env name="JOBSOURCE_JOBSTT" value="false" force="true"/>
         <env name="JOBSOURCE_EMPLOYTT" value="false" force="true"/>
         <env name="PULSE_ENABLED" value="false" force="true"/>
